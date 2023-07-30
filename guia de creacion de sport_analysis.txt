@@ -1,0 +1,35 @@
+) Crear y abri el entorno virtual
+
+) Instalar en en venv django
+	pip install django
+
+) Instalar en el venv el controlador de MySql para django 
+	pip install mysqlclient
+
+
+) crear nueva aplicación
+
+) Adicionar nuevo modelo
+
+) Verificar el modelo:
+	Crear superusuario:
+		>python manage.py createsuperuser
+		Username (leave blank to use 'asus'): yohan
+		Email address: ymrodriguezg.5@gmail.com
+		Password: admin
+
+) Registrar el modelo en admin.py de la aplicación para poderlo administrar desde el panel de administración]:
+	from .models import League 
+
+	# Register your models here.
+	admin.site.register(League)
+
+) Aplicar las migraciones
+
+) Iniciar el servidor
+
+#category-left-menu > div > div:nth-child(2)
+#category-left-menu > div > div:nth-child(3)
+
+
+)
