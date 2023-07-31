@@ -6,7 +6,7 @@ class League(models.Model):
 
     # ATRIBUTOS:
     id_league = models.IntegerField(primary_key=True, db_column='id_league')
-    name_league = models.CharField(max_length=50, db_column='name_league')
+    name_league = models.CharField(max_length=70, db_column='name_league')
     link_league = models.CharField(max_length=150, db_column='link_league')
     # "primary_key=True": Determina que la columna << id_league >> es la primary Key de la tabla ya creada en MySql
     # db_column='...': Referencia la columna de la tabla en la db de cada atributo creado dentro del modelo.

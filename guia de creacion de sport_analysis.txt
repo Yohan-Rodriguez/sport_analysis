@@ -28,8 +28,155 @@
 
 ) Iniciar el servidor
 
-#category-left-menu > div > div:nth-child(2)
-#category-left-menu > div > div:nth-child(3)
 
 
-)
+
+
+
+Argentina:
+	NBL	Bien
+	Super 20	
+
+
+Australia 
+	NBL		Temporada 1 en curso
+	WNBL		Temporada 1 en curso (Cambiar si la liga es de mujeres)
+
+
+Austria
+	BSL	Bien
+	AWBL	Bien (Cambiar si la liga es de mujeres)
+
+
+belgica:
+	BLB	Bien
+	2da 	CSS previous 2 season
+	
+
+Bolivia:
+	Libobasket	Bien
+
+
+Boznia
+	1er 	Bien
+	Drugga  nombre de liga demasiado largo. Ya solucionado. Pendiente por observar otros posibles errores.
+
+
+Brazil
+	NBB	Problema con previous
+	super 8 	Cambiar esta liga por otra de Barzil
+
+
+Bulgaria
+	NBL	Togge
+	cup 	ELIMINAR (pocos partidos)
+
+
+Canada
+	NBL	previous
+
+	
+Chle	
+	Nacional	togge
+
+
+China
+	CBA	Bien (Por revisar)
+	CBA All STAR	ELIMINAR (pocos partidos)
+
+
+Chibbese tasipei
+	SBL	Previous y togge
+	P-League	Previous y togge
+
+
+Croatia
+	HT Premijer	Bien (Por revisar)
+	Prva Muska	Bien (Por revisar)
+
+
+Croatia Amateur
+	1	Togge
+	2	CSS y Togge
+
+
+Cyphrus
+	Division A	Togge
+
+
+Czech
+	NBL	Togge	
+	2	Togge
+
+
+Dinamarca
+	1	
+
+
+Dominicana repucli
+	1	Previpou y Togge
+
+
+El salvador
+	LNB	Togge
+
+
+England
+	BBL	Previous y Togge
+	Cup	CSS y Togge
+
+
+Estonia
+	KML		CSS y Togge
+
+
+Finlandi
+	Korisliiga	Togge
+	1 division	CSS y Togge
+
+
+France
+	Pro A	Togge no más por ahora
+	Pro B	Togge no más por ahora
+
+
+Germany
+	BBL	CSS y Togge
+	BBL-Pokal	CSS y Togge
+
+
+Greece
+	A1	Togge
+	Elite Legaue	Togge
+
+
+Greece Amateur
+	Ae1aeskak	CSS y Togge
+	A2 Eskak	CSS y Togge
+
+
+Hungri
+	NBI	Togge
+	NBI Women	Togge
+
+
+Iceland
+	Urvalsdelid	Togge
+	Urvalsdelid Women	Togge
+
+
+Indonesia
+	IBL	Previous y Togge
+	
+
+Internationa
+	Olympic Games	CSS y Togge
+	Olympic Games Women	CSS y Togge	
+
+
+Iran
+	SuperLeague	Previous y Togge
+
+
+Israel
+	SuperLeague	Togge
