@@ -22,4 +22,5 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path('ws-basketball/', views.ws_basketball_view, name='ws-basketball'),
     path('test-match/', views.test_match_view, name='test'),
+    path('search-links/', views.searc_links_view, name='search-view')
 ]

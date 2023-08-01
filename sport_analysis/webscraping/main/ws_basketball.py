@@ -6,7 +6,7 @@ from random import randint
 from django.db.utils import IntegrityError
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from .list_css import store_css, get_list_keys
+from .list_css import get_css_button_previous, get_css_challenge_season, get_key_value
 
 
 def msn_exceptions(type_try, e):
@@ -42,7 +42,7 @@ def search_button(driver, selector_css_button, msn):
 # ==================================================================================================================== #
 
 
-def test():
+def catch_data_leagues():
     # ================================================================================================================ #
     # CHROME DRIVER CONNECTION                                                                                         #
     # ================================================================================================================ #
@@ -58,15 +58,17 @@ def test():
     # ================================================================================================================ #
 
     # ================================================================================================================ #
-    # ITERAR SOBRE LOS PAISES                                                                                          #
+    # OBTENER LINK's DE LIGAS                                                                                          #
     # ================================================================================================================ #         
+    iterator_country = 1
     # Iterar sobre cada país
-    for i_country in range(1, 64, 1):
+    # BUCLE INFINITO
+    while True:
         try:
             # CSS de cada país
             css_contries = '#__next > main > div > div.sc-hLBbgP.sc-eDvSVe.gjJmZQ.fEHohf.sc-836c558d-1.eDNgWX > div.sc'\
                            '-hLBbgP.bMQfbT.sc-836c558d-2.leSghq > div.sc-hLBbgP.dRtNhU > div > div.sc-hLBbgP.gRCqqZ > '\
-                            f'a:nth-child({i_country}) > div > img'  
+                            f'a:nth-child({iterator_country}) > div > img'  
 
             # Clic sobre cada país para abirir sus respectivas ligas    
             div_countries = driver.find_element(By.CSS_SELECTOR, css_contries)
@@ -89,8 +91,8 @@ def test():
             # Eliminar el últmio registro. Este contiene la url general del país y no de una liga en particular
             del a_tags[-1]
 
-            # Máximo 2 ligas por cada país (las más importantes)
-            for a_tag in a_tags[:2]:        
+            # Máximo 3 ligas por cada país (las más importantes)
+            for a_tag in a_tags[:4]:        
                 try:
                     # String con la url de la liga
                     link_league = a_tag.get_attribute('href')
@@ -104,7 +106,7 @@ def test():
 
                     # Cambiar el enfoque a la segunda ventana
                     # Obtén los identificadores de todas las ventanas abiertas
-                    windows = driver.window_handles             
+                    windows = driver.window_handles       
 
                     # Cmbiar enfoque
                     driver.switch_to.window(windows[-1])
@@ -112,8 +114,8 @@ def test():
                     # ================================================================================================ #
                     # GUARDAR DATOS EN LA TABLA "leagues"                                                              #
                     # ================================================================================================ #
-                    # 5 Intentos para almacenar los datos en la db
-                    for i_db_leagues in range(5):
+                    # BUCLE INFINITO
+                    while True:
                         try:
                             # Generar id único aleatoriamente
                             id_league_ran = randint(1000, 10000)
@@ -149,27 +151,25 @@ def test():
                     # ================================================================================================ #
                     # SELECCIONAR SEASON                                                                               #
                     # ================================================================================================ #
-                    # Mensaje a mostrar por consola cada vez que se cambia de season (temporada)
-                    season_temp = 1
-
                     # Iterar sobre 3 "seasons" de cada liga
                     for season in range(1, 4, 1):
                         try:
-                            print('\n', '═'*60, f'\n\nSeason de {tb_leagues.name_league}:\n\t# <{season_temp}>')
+                            print('\n', '═'*60, f'\n\nSeason de {tb_leagues.name_league}:\n\t# <{season}>')
                             
                             # ======================================================================================== #
                             # OBTNER DATOS DE TODOS LOS PARTIDOS DE LA SEASON                                          #
                             # ======================================================================================== #
                             # Cada iteración a continuación carga 10 partidos nuevos por la acción del "button_previous"
+                            # while True:
                             for i in range(2):
                                 # Por ahora, este "try" solo se encarga del "button_previous"
                                 try:
-                                    for i_match in range(10, 6, -1):
+                                    for i_match in range(10, 0, -1):
                                         try:
                                             # ==================================================================================== #
                                             # AUX FUNCTION                                                                         #
                                             # ==================================================================================== #
-                                            def search_css(this_css):                                                
+                                            def search_css(this_css):
                                                 this_div = driver.find_element(By.CSS_SELECTOR, this_css).text
                                                 return this_div
                                             # END --------- AUX FUNCTION                                                           #
@@ -179,46 +179,20 @@ def test():
                                             # DIV 10 MACTHES                                                                       #
                                             # ==================================================================================== #
                                             # Obtener "css_selector" de la finalización del partido
-                                            # Buscar CSS indicado en el archivo "list_css.py"                                            
-                                            list_this_keys = ['ft', 'date', 'home', 'away', 'q1_h', 'q2_h', 'q3_h', 'q4_h', 'q1_a', 
-                                                              'q2_a', 'q3_a', 'q4_a', 'total_h', 'total_a', ]
-                                            
-                                            for i_css_ft in ['ft', 'ft_2', 'ft_3']:
-                                                css_ft = store_css(i_css_ft, i_match)
-
-                                                try:
-                                                    div_ft = search_css(css_ft)
-                                                    if i_css_ft == 'ft':
-                                                        continue
-
-                                                    elif i_css_ft == 'ft_2':
-                                                        list_keys_temp = []
-                                                        for i in list_this_keys:
-                                                            list_keys_temp.append(i + '_2')
-                                                                                                                
-                                                        list_this_keys = list_keys_temp
-                                                    
-                                                    elif i_css_ft == 'ft_3':
-                                                        list_keys_temp = []
-                                                        for i in list_this_keys:
-                                                            list_keys_temp.append(i + '_3')
-                                                                                                                
-                                                        list_this_keys = list_keys_temp
-
-                                                    break
-
-                                                except:
-                                                    print('\nCambiando selectores CSS...')
-
+                                            # Buscar CSS indicado en el archivo "list_css.py"
+                                            css_ft = store_css('ft', i_match)
+                                            div_ft = search_css(css_ft)
 
                                             if (div_ft == 'FT') or (div_ft == 'AET'):
                                                 
                                                 # Diccionario que contendrá el valor ".text" de las variables buscadas
                                                 dict_data_match = {}
 
+                                                # Lista con las tags: ['ft', 'date', 'home', ..., 'q2_a', 'q3_a', 'q4_a', 'total_a']
+                                                list_tags = get_list_keys(i_match)
                                                 # Este for no lleva bloque "try-except "
                                                 # porque el error es manejado en la función "get_search_css"
-                                                for i_tags_dict in list_this_keys:
+                                                for i_tags_dict in list_tags:
 
                                                     # ============================================================================ #
                                                     # AUX FUNCTION                                                                 #
@@ -241,7 +215,7 @@ def test():
                                                     # END --------- AUX FUNCTION                                                   #
                                                     # ============================================================================ #
 
-                                                    if i_tags_dict in list_this_keys[4:-2]:
+                                                    if i_tags_dict in ['q1_h', 'q2_h', 'q3_h', 'q4_h', 'q1_a', 'q2_a', 'q3_a', 'q4_a']:
                                                         
                                                         # Posibles estructuras del CSS de los cuartos del partido 
                                                         list_str_change_q = ['laFqms', 'cKEAmW']
@@ -255,7 +229,7 @@ def test():
                                                             if div_i !=  None:
                                                                 break                     
 
-                                                    elif i_tags_dict in list_this_keys[-2:]:
+                                                    elif i_tags_dict in ['total_h', 'total_a']:
                                                         
                                                         # Posibles estructuras del CSS del total de puntos de los equipos
                                                         list_str_change_toal_points = ['hVtlqB', 'UgLMb']
@@ -268,12 +242,9 @@ def test():
                                                             
                                                             if div_i !=  None:
                                                                 break              
-
-                                                    elif i_tags_dict in list_this_keys[:4]:  
-                                                        div_i = get_search_css(i_tags_dict, i_match, str_change='')                        
-
+                                                        
                                                     else:
-                                                        continue
+                                                        div_i = get_search_css(i_tags_dict, i_match, str_change='')                        
 
                                                     # Agregar nueva "key-value" en el diccionario "dict_data_match"
                                                     dict_data_match[i_tags_dict] = div_i
@@ -298,8 +269,7 @@ def test():
                                                     'l-mdMin > div > div.sc-hLBbgP.sc-eDvSVe.gjJmZQ.fEHohf.sc-836c558d-1.eD'\
                                                     'NgWX > div.sc-hLBbgP.fSpQRs.sc-836c558d-2.kBACDz > div:nth-child(5) > '\
                                                     'div > div.sc-csuSiG.ikkoci > div > div > div.sc-hLBbgP.sYIUR > div > d'\
-                                                    'iv.sc-hLBbgP.sc-eDvSVe.fcWLie.ilXvf > div:nth-child(1) > button'                                                    
-                                    
+                                                    'iv.sc-hLBbgP.sc-eDvSVe.fcWLie.ilXvf > div:nth-child(1) > button'
                                     
                                     button_previous = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.CSS_SELECTOR, 
                                                                                                                     css_previous)))  
@@ -317,15 +287,11 @@ def test():
                             # ======================================================================================== #
                             # SELECCIONAR NUEVA SEASON                                                                 #
                             # ======================================================================================== #                            
-                            # El CAMBIO de "season" se realiza solo una vez para recopilar datos de 2 "seasons"
+                            # El CAMBIO de "season" se realiza solo una vez para recopilar daots de 2 "seasons"
                             if season < 2:
-                                list_css_seasons = ['94', '44230', '35348', '63922', '53250', '56494', '1408', '62731', '61498',
-                                                    '53250', '53374', '3376', '19960', '64269', '34372', '49241', '36657', '59546',
-                                                    '53727', '65026'
-                                                   ]
-                                #downshift-65026-toggle-button
-                            
-                                
+                                list_css_seasons = ['94', '44230', '35348']
+                                #downshift-63922-toggle-button
+                                #downshift-53250-toggle-button
                                 for i_season in list_css_seasons:
                                     try:
                                         # Clic para seleccionar la temporada de la liga
@@ -343,9 +309,6 @@ def test():
 
                                         # Hacer clic en una opción específica
                                         opciones_ul[season].click()
-
-                                        # Este valor solo se usa para ser mostraddo en el mensaje por consola
-                                        season_temp += 1
                                         
                                         break
 
@@ -387,9 +350,13 @@ def test():
             # Clic para cerrar el contenedor de ligas 
             div_countries.click()
 
+
         except Exception as e:
             msn_exceptions(type_try='1', e=e)
-    # END --------- ITERAR SOBRE LOS PAISES                                                                            #
+        
+        # Controlador de acceso a cada contenedor de ligas de país
+        iterator_country += 1
+    # END --------- OBTENER LINK's DE LIGAS                                                                            #
     # ================================================================================================================ #
 
     print('\nFIN...\n')
