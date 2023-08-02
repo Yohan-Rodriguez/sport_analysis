@@ -6,7 +6,7 @@ from random import randint
 from django.db.utils import IntegrityError
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from .list_css import get_css_button_previous, get_css_challenge_season, get_key_value
+from .list_css import get_key_value
 
 
 def msn_exceptions(type_try, e):

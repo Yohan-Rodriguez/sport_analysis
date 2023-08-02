@@ -5,9 +5,8 @@ from random import randint
 from django.db.utils import IntegrityError
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from .list_css import get_key_value, get_css_challenge_season, get_css_button_previous
+from .list_css import get_key_value, get_xpath_button_previous, get_div_container_button_season
 from webscraping.models import League
-
 
 
 # Lista de keys que referencian cada variable a buscar en la página web
@@ -30,7 +29,7 @@ def search_button(driver, selector_css_button, msn):
 
     while True:
         try:
-            button = driver.find_element(By.CSS_SELECTOR, selector_css_button)
+            button = driver.find_element(By.XPATH, selector_css_button)
             break
 
         except Exception:
@@ -71,7 +70,7 @@ def test(driver, id_league, name_league, link_league):
     # Cmbiar enfoque
     driver.switch_to.window(windows[-1])
     
-    print('\n', '═'*100, f'\n\nLiga: < {name_league} >\n')
+    print('\n', '═'*100, f'\n\nLiga: < {name_league} >\n', '═'*100)
 
     # ================================================================================================ #
     # SELECCIONAR SEASON                                                                               #
@@ -80,7 +79,7 @@ def test(driver, id_league, name_league, link_league):
     season_temp = 1
 
     # Iterar sobre 3 "seasons" de cada liga
-    for season in range(3):
+    for season in range(1, 4, 1):
         try:
             print('\n', '═'*60, f'\n{name_league} → Season: <{season_temp}>\n', '═'*60)
             
@@ -93,24 +92,24 @@ def test(driver, id_league, name_league, link_league):
                 # que está al final de este bucle for que controla el evento clic sobre "button_previous"
                 try:
                     # Iterar sobre cada div de partido único
-                    for i_match in range(1, 3, 1):
+                    for i_match in range(1, 2, 1):
                         try:
                             # ==================================================================================== #
                             # AUX FUNCTIONS                                                                        #
                             # ==================================================================================== #
-                            def search_css(this_css):                                                
-                                this_div = driver.find_element(By.CSS_SELECTOR, this_css).text
+                            def search_xpath(this_xpath):                                                
+                                this_div = driver.find_element(By.XPATH, this_xpath).text
                                 return this_div
 
 
-                            def get_search_css(css_temp, key_rx, i_match, str_change=''):
+                            def get_search_xpath(xpath_temp, key_rx, i_match):
                                 # OBTENER "css_selector" 
                                 # Buscar string con CSS indicado en el archivo "list_css.py"
-                                css_i = get_key_value(css_temp=css_temp, key_rx=key_rx, i_match=i_match, str_change=str_change)
+                                xpath_i = get_key_value(xpath_temp=xpath_temp, key_rx=key_rx, i_match=i_match)
 
                                 # Buscar elemento dentro de la págiina web con el CSS obtenido 
                                 # y obtener el ".text"
-                                div_i = search_css(css_i)
+                                div_i = search_xpath(xpath_i)
 
                                 return div_i                                 
                             # END --------- AUX FUNCTIONS                                                          #
@@ -124,25 +123,21 @@ def test(driver, id_league, name_league, link_league):
                             pointer_css_s = 0 
 
                             # Obtener "css_selector" de la finalización "FT o AET" del partido
-                            for i_css_ft in range(3):
+                            for i_xpath_ft in range(3):
                                 try:
-                                    div_ft = get_search_css(css_temp=i_css_ft, key_rx='ft', i_match=i_match)
+                                    div_ft = get_search_xpath(xpath_temp=i_xpath_ft, key_rx='ft', i_match=i_match)
                                     
-                                    pointer_css_s += i_css_ft                                 
+                                    pointer_css_s += i_xpath_ft
                                 
                                     break
 
-                                except:
-                                    if i_css_ft >= 2:
-                                        raise Exception(f'\nError: CSS_SELECTOR "ft" no encontrado para el partido {i_match}...')
+                                except Exception:
+                                    if i_xpath_ft >= 2:
+                                        raise Exception(f'\nError: XPATH "ft" no encontrado para el partido {i_match}...')
                                         
                                     continue
 
-                            if (div_ft == 'FT') or (div_ft == 'AET'):
-                                # Variable que contiene la información de OverTime en el partido
-                                # 0 = False 
-                                # 1 = True
-                                over_time = 0
+                            if (div_ft == 'FT') or (div_ft == 'AET'):                              
                                 
                                 # Diccionario que contendrá los valores (".text") de las variables buscadas
                                 dict_data_match = {}
@@ -152,33 +147,18 @@ def test(driver, id_league, name_league, link_league):
                                 # porque el error es manejado en la función "get_search_css"
                                 for i_tags_dict in list_this_keys:                                    
 
-                                    if i_tags_dict in list_this_keys[4:-2]:
-                                        
-                                        # Posibles estructuras del CSS de los cuartos del partido 
-                                        list_str_change_q = ['laFqms', 'cKEAmW']
-                                        for i_str_change in list_str_change_q:
-                                            # Este for no lleva bloque "try-except "
-                                            # porque el error es manejado en la función "get_search_css"
+                                    # list_this_keys[:4] = ['ft', 'date', 'home', 'away']
+                                    if i_tags_dict in list_this_keys[:4]:  
+                                        # Usar la función get_search_css para obtener los datos correctos de la página web    
+                                        div_i = get_search_xpath(xpath_temp=pointer_css_s, key_rx=i_tags_dict, i_match=i_match)                        
+                                    
+                                    # list_this_keys[4:-2] = ['q1_h', 'q2_h', 'q3_h', 'q4_h', 'q1_a', 'q2_a', 'q3_a', 'q4_a']
+                                    elif i_tags_dict in list_this_keys[4:-2]:                                       
+                                        div_i = get_search_xpath(xpath_temp=pointer_css_s, key_rx=i_tags_dict, i_match=i_match)                                                              
 
-                                            # Usar la función get_search_css para obtener los datos correctos de la página web    
-                                            div_i = get_search_css(css_temp=pointer_css_s, key_rx=i_tags_dict, i_match=i_match, 
-                                                                   str_change=i_str_change)
-                                                              
-
+                                    # list_this_keys[-2:] = ['total_h', 'total_a']
                                     elif i_tags_dict in list_this_keys[-2:]:
-                                        
-                                        # Posibles estructuras del CSS del total de puntos de los equipos
-                                        list_str_change_toal_points = ['hVtlqB', 'UgLMb']
-                                        for i_str_change in list_str_change_toal_points:
-                                            # Este for no lleva bloque "try-except "
-                                            # porque el error es manejado en la función "get_search_css"
-                                            
-                                            # Usar la función get_search_css para obtener los datos correctos de la página web    
-                                            div_i = get_search_css(css_temp=pointer_css_s, key_rx=i_tags_dict, i_match=i_match, 
-                                                                   str_change=i_str_change)         
-
-                                    elif i_tags_dict in list_this_keys[:4]:  
-                                        div_i = get_search_css(css_temp=pointer_css_s, key_rx=i_tags_dict, i_match=i_match, str_change='')                        
+                                        div_i = get_search_xpath(xpath_temp=pointer_css_s, key_rx=i_tags_dict, i_match=i_match)
 
                                     else:
                                         continue
@@ -188,13 +168,18 @@ def test(driver, id_league, name_league, link_league):
                                     # Lista con las tags: ['ft', 'date', 'home', ..., 'q2_a', 'q3_a', 'q4_a', 'total_a']
                                     # "value" = .text obtenido con la función "search_css()"
 
+                                # Variable que contiene la información de OverTime en el partido
+                                # 0 = False 
+                                # 1 = True
+                                over_time = 0
+                                
                                 if div_ft == 'AET':
                                     over_time = 1
 
                                 dict_data_match['OT'] = over_time
 
                                 # Imprimir por consola el partido sensado
-                                print('\n', dict_data_match)
+                                #print('\n', dict_data_match)
 
                             else:
                                 print('\nPartido no iniciado, no finalizado aún o cancelado...')
@@ -205,23 +190,33 @@ def test(driver, id_league, name_league, link_league):
                             # Teóricamente, está "exception" se debe activar únicamente si "div_ft" falla (si no se encuentra) 
                             # Para que se cunpla lo anterior, el mensaje de está "exception" debe estrar predecido por 
                             # raise Exception('\nError: CSS_SELECTOR "ft" no encontrado...')
-                            msn_exceptions(type_try='3', e=e)                                
+                            msn_exceptions(type_try='3', e=e)
+                            break
                         
                     # ============================================================================================ #
                     # BUTTON "PREVIOUS"                                                                            #
                     # ============================================================================================ #
                     # Obtener lista de CSS_SELECTOR's del "button_previous"
-                    css_previous = get_css_button_previous()                                                                                          
+                    xpath_previous = get_xpath_button_previous()                                                                                          
                     
-                    for b_previous in css_previous:
-                        # Buscar y dar clic sobre el botón dentro de la página web
-                        button_previous = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.CSS_SELECTOR, b_previous)))  
-                        driver.execute_script("arguments[0].click();", button_previous)
+                    for b_previous in xpath_previous:
+                        try:
+                            # Buscar y dar clic sobre el botón dentro de la página web
+                            button_previous = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.XPATH, b_previous)))  
+                            driver.execute_script("arguments[0].click();", button_previous)
+
+                            break
+
+                        except Exception:
+                            if b_previous == xpath_previous[-1]:  
+                                raise Exception()
+                            
+                            continue
                     # END --------- BUTTON "PREVIOUS"                                                              #
                     # ============================================================================================ #
 
                 except Exception as e:
-                    msn_exceptions(type_try='2', e=f'\nError al dar clic en "button_previous":\n{e}')
+                    msn_exceptions(type_try='2', e=f'\nError al dar clic en "button_previous"...')
                     # Ir a la siguiente "Season" porque en la actual ya no está disponible "button_previous"
                     break
             # END --------- OBTNER DATOS DE TODOS LOS PARTIDOS DE LA SEASON                            #
@@ -231,39 +226,58 @@ def test(driver, id_league, name_league, link_league):
             # SELECCIONAR NUEVA SEASON                                                                 #
             # ======================================================================================== #                            
             # El CAMBIO de "season" se realiza solo una vez para recopilar datos de 2 "seasons"
-            if season < 2:
-                # Trae la lista de CSS_SELECTOR's del cambio de temporada "Season"
-                list_css_seasons = get_css_challenge_season()                 
-                
+            if season < 2:                             
+
+                # Traer la lista de los XPATH del cambio de Season
+                list_xpath_div_b = get_div_container_button_season()
+
                 # Iterar sonre la lista de CSS_SELECTOR's de Season's
-                for i_season in list_css_seasons:
+                for xpath_div_contain_b in list_xpath_div_b:
                     try:
-                        # Clic para seleccionar la temporada de la liga
-                        button_season = driver.find_element(By.CSS_SELECTOR, f'#downshift-{i_season}-toggle-button')
+                        # Buscar el xpath dentro de la página web 
+                        div_contain_button = driver.find_element(By.XPATH, xpath_div_contain_b) 
+                        
+                        # Dentro del div principal, encontrar el botón
+                        button_menu = div_contain_button.find_element(By.TAG_NAME, 'button')
+
+                        # Obtener el valor del atributo "aria-controls" del botón
+                        valor_aria_controls = button_menu.get_attribute('aria-controls')
+                        # Ejemplo: valor_aria_controls = 'downshift-1024-menu'
+
+                        # Extraer el número toggle del valor del atributo "aria-controls" para usar en el "css_buton_menu"
+                        num_toggle = valor_aria_controls.split('-')[1]
+                        
+                        # CSS del botón del menú despegable 
+                        css_button_menu = f'#downshift-{num_toggle}-toggle-button'
+                        
+                        # Bsucar el botón del menú despegable dentro de la página web
+                        button_season = driver.find_element(By.CSS_SELECTOR, css_button_menu)
+
+                        # Obtener el ménu despegable
                         button_season.click()
-
+                        
                         # CSS de la lista desplegable que contiene las temporadas (sesons)
-                        css_ul = f'#downshift-{i_season}-menu'
-
+                        css_ul = f'#{valor_aria_controls}'
+                        # Ejemplo: css_ul = #downshift-1024-menu
+                        
                         # Esperar a que el elemento <ul> se despliegue después de hacer clic en el botón
                         ul_element = WebDriverWait(driver, 1).until(EC.presence_of_element_located((By.CSS_SELECTOR, css_ul)))  
-
+                        
                         # Acceder a las opciones dentro del <ul>
                         opciones_ul = ul_element.find_elements(By.TAG_NAME, 'li')
-
+                        
                         # Hacer clic en una opción específica
-                        opciones_ul[season].click()
-
+                        opciones_ul[season].click()                       
+                        
                         # Este valor solo se usa para ser mostraddo en el mensaje por consola
                         season_temp += 1
                         
                         break
 
-                    except Exception:
-                        if i_season == list_css_seasons[-1]:
-                            raise Exception('\nERROR: CSS del cambio de Season no encontrado...')
-                        
-                        continue
+                    except Exception as e:
+                        # Si ya no hay más elementos sobre los que iterar, lanzar la siguiente exception
+                        if xpath_div_contain_b == list_xpath_div_b[-1]:
+                            raise Exception(f'\nERROR: XPATH del cambio de Season no encontrado...\n{e}')
 
             else:
                 break
@@ -272,6 +286,7 @@ def test(driver, id_league, name_league, link_league):
         
         except Exception as e:
             msn_exceptions(type_try='1', e=e)
+            break
     # END --------- SELECCIONAR SEASON                                                                 #
     # ================================================================================================ #
 

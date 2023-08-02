@@ -180,3 +180,6 @@ Iran
 
 Israel
 	SuperLeague	Togge
+
+
+#__next > main > div > div.fresnel-container.fresnel-greaterThanOrEqual-mdMin > div > div.sc-hLBbgP.sc-eDvSVe.gjJmZQ.fEHohf.sc-836c558d-1.eDNgWX > div.sc-hLBbgP.fSpQRs.sc-836c558d-2.kBACDz > div.sc-hLBbgP.dLEAxC > div.sc-hLBbgP.cYhPkD > div.sc-hLBbgP.sc-eDvSVe.hnjHzE.iMeMHj > div.sc-hLBbgP.erlzaP > div.sc-hLBbgP.sc-eDvSVe.jyUppZ.jPodnM > div.sc-hLBbgP.jYoMzs > div > div
