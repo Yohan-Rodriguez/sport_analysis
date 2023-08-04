@@ -19,6 +19,7 @@ def list_delete_links():
                         'https://www.sofascore.com/tournament/basketball/international/fiba-world-cup-qualification-americas/10461',
                         'https://www.sofascore.com/tournament/basketball/international/u20-fiba-eurobasket-div-b-women/891',
                         'https://www.sofascore.com/tournament/basketball/croatia-amateur/business-basketball-league/18326',
+                        'https://www.sofascore.com/tournament/basketball/croatia-amateur/old-stars-zagreb/20475',
                         'https://www.sofascore.com/tournament/basketball/international/fiba-americup-qualification/14711',
                         'https://www.sofascore.com/tournament/basketball/international/liga-aba-super-cup/11468',
                         'https://www.sofascore.com/tournament/basketball/international/liga-sudamericana/1936',

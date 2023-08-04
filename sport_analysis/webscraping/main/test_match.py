@@ -20,6 +20,7 @@ def msn_exceptions(type_try, e):
     print(f"\nError Try ({type_try}):", mensaje_error[:150])
 
 
+
 # ==================================================================================================================== #
 # BUSCAR CSS_SELECTOR BUTTON                                                                                           #
 # ==================================================================================================================== #
@@ -47,29 +48,24 @@ def search_button(driver, selector_css_button, msn):
 # ==================================================================================================================== #
 
 
-def test(driver, id_league, name_league, link_league):
 
+def test():
     # ================================================================================================================ #
-    # ITERAR SOBRE LOS PAISES                                                                                          #
-    # ================================================================================================================ #         
-    i_country = None
+    # CHROME DRIVER CONNECTION                                                                                         #
+    # ================================================================================================================ #
+    options = webdriver.ChromeOptions()
+    options.binary_location = 'C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe'
+    driver_path = "drivers/chromedriver.exe"
+    driver = webdriver.Chrome(options=options)#, executable_path=driver_path)
 
-    count_leagues = 0
-
-
-    # ================================================================================================ #
-    # ABRIR NUEVA PESTAÑA                                                                              #
-    # ================================================================================================ #
-    # Abir nueva ventana (tab) con la url de la liga de la actual iteración
-    driver.execute_script(f"window.open('{link_league}');")
-
-    # Cambiar el enfoque a la segunda ventana
-    # Obtén los identificadores de todas las ventanas abiertas
-    windows = driver.window_handles             
-
-    # Cmbiar enfoque
-    driver.switch_to.window(windows[-1])
+    name_league = 'https://www.sofascore.com/tournament/basketball/croatia/druga-muska-liga-jug/16359'
     
+    driver.maximize_window()
+    driver.get(name_league)
+    # END --------- CHROME DRIVER CONNECTION                                                                           #
+    # ================================================================================================================ #
+
+
     print('\n', '═'*100, f'\n\nLiga: < {name_league} >\n', '═'*100)
 
     # ================================================================================================ #
@@ -77,6 +73,11 @@ def test(driver, id_league, name_league, link_league):
     # ================================================================================================ #
     # Mensaje a mostrar por consola cada vez que se cambia de season (temporada)
     season_temp = 1
+    
+    # Integer que indica el conjunto de CSS's indicado de cada liga
+    pointer_css_s = 0 
+    flag_no_found_css_set = True
+    flag_no_found_previous_b = True
 
     # Iterar sobre 3 "seasons" de cada liga
     for season in range(1, 4, 1):
@@ -97,8 +98,9 @@ def test(driver, id_league, name_league, link_league):
                             # ==================================================================================== #
                             # AUX FUNCTIONS                                                                        #
                             # ==================================================================================== #
-                            def search_xpath(this_xpath):                                                
-                                this_div = driver.find_element(By.XPATH, this_xpath).text
+                            def search_xpath(this_xpath):
+                                this_div = WebDriverWait(driver, 2).until(EC.presence_of_element_located((By.XPATH, this_xpath)))
+                                this_div = this_div.text
                                 return this_div
 
 
@@ -115,29 +117,33 @@ def test(driver, id_league, name_league, link_league):
                             # END --------- AUX FUNCTIONS                                                          #
                             # ==================================================================================== #
 
-
                             # ==================================================================================== #
                             # DIV 10 MACTHES                                                                       #
                             # ==================================================================================== #
-                            # Integer que indica el conjunto de CSS's indicado de cada liga
-                            pointer_css_s = 0 
-
-                            # Obtener "css_selector" de la finalización "FT o AET" del partido
-                            for i_xpath_ft in range(3):
-                                try:
-                                    div_ft = get_search_xpath(xpath_temp=i_xpath_ft, key_rx='ft', i_match=i_match)
-                                    
-                                    pointer_css_s += i_xpath_ft
-                                
-                                    break
-
-                                except Exception:
-                                    if i_xpath_ft >= 2:
-                                        raise Exception(f'\nError: XPATH "ft" no encontrado para el partido {i_match}...')
+                            if flag_no_found_css_set:
+                                # Obtener "css_selector" de la finalización "FT o AET" del partido
+                                for i_xpath_ft in range(5):
+                                    try:
+                                        div_ft = get_search_xpath(xpath_temp=i_xpath_ft, key_rx='ft', i_match=i_match)
                                         
-                                    continue
+                                        pointer_css_s += i_xpath_ft
+                                        flag_no_found_css_set = False
+                                    
+                                        break                                                
 
-                            if (div_ft == 'FT') or (div_ft == 'AET'):                              
+                                    except Exception:
+                                        if i_xpath_ft >= 4:
+                                            raise Exception(f'\nError: XPATH "ft" no encontrado para el partido {i_match}...')
+                                    
+                            else:
+                                try:
+                                    div_ft = get_search_xpath(xpath_temp=pointer_css_s, key_rx='ft', i_match=i_match)
+
+                                except:
+                                    flag_no_found_css_set = True
+                                    raise Exception(f'Buscando posible cambio de XPATH_SET en la liga actual en la Season: <{season_temp}> ...')
+
+                            if (div_ft == 'FT') or (div_ft == 'AET'):                   
                                 
                                 # Diccionario que contendrá los valores (".text") de las variables buscadas
                                 dict_data_match = {}
@@ -182,7 +188,9 @@ def test(driver, id_league, name_league, link_league):
                                 #print('\n', dict_data_match)
 
                             else:
-                                print('\nPartido no iniciado, no finalizado aún o cancelado...')
+                                print(f'\nPartido en estado: {div_ft}...')
+
+                            # print(dict_data_match)
                             # END --------- DIV 10 MACTHES                                                         #
                             # ==================================================================================== #
 
@@ -196,22 +204,38 @@ def test(driver, id_league, name_league, link_league):
                     # ============================================================================================ #
                     # BUTTON "PREVIOUS"                                                                            #
                     # ============================================================================================ #
-                    # Obtener lista de CSS_SELECTOR's del "button_previous"
-                    xpath_previous = get_xpath_button_previous()                                                                                          
+
                     
-                    for b_previous in xpath_previous:
+                    if flag_no_found_previous_b:
+                    
+                        # Obtener lista de CSS_SELECTOR's del "button_previous"
+                        xpath_previous = get_xpath_button_previous()
+
+                        for b_previous in xpath_previous:
+                            try:
+                                print(f'Buscando el button con XPATH: {b_previous}...')
+                                # Buscar y dar clic sobre el botón dentro de la página web
+                                button_previous = WebDriverWait(driver, 1).until(EC.presence_of_element_located((By.XPATH, b_previous)))  
+                                driver.execute_script("arguments[0].click();", button_previous)
+
+                                flag_no_found_previous_b = False
+
+                                break
+
+                            except Exception:
+                                if b_previous == xpath_previous[-1]:
+                                    raise Exception()
+                                
+                                continue
+                            
+                    else:
                         try:
-                            # Buscar y dar clic sobre el botón dentro de la página web
-                            button_previous = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.XPATH, b_previous)))  
+                            print('Dando clic sobre el button con el XPATH ya encontrado: "button_previous"')
                             driver.execute_script("arguments[0].click();", button_previous)
 
-                            break
-
-                        except Exception:
-                            if b_previous == xpath_previous[-1]:  
-                                raise Exception()
-                            
-                            continue
+                        except:
+                            flag_no_found_css_set = True
+                            raise Exception(f'Buscando posible cambio de XPATH_SET en la liga actual en la Season: <{season_temp}> ...')
                     # END --------- BUTTON "PREVIOUS"                                                              #
                     # ============================================================================================ #
 
@@ -290,109 +314,9 @@ def test(driver, id_league, name_league, link_league):
     # END --------- SELECCIONAR SEASON                                                                 #
     # ================================================================================================ #
 
-    # Al temrinar de trabajar en la segunda ventana, se cierra está ventana
-    # Cerrar la segunda ventana
-    driver.close()
-    
+    # Cerrar el navegador
+    driver.quit()      
 
-    # Cambiar el enfoque de vuelta a la primera ventana
-    driver.switch_to.window(windows[0])               
+    print('\nFIN...\n')         
 # END --------- ITERAR SOBRE LOS PAISES                                                                            #
 # ================================================================================================================ #
-
-
-
-def inicializar_driver():
-    # ================================================================================================================ #
-    # CHROME DRIVER CONNECTION                                                                                         #
-    # ================================================================================================================ #
-    options = webdriver.ChromeOptions()
-    options.binary_location = 'C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe'
-    driver_path = "drivers/chromedriver.exe"
-    driver = webdriver.Chrome(options=options)#, executable_path=driver_path)
-    # END --------- CHROME DRIVER CONNECTION                                                                           #
-    # ================================================================================================================ #
-
-    return driver
-
-
-def get_and_set_data_basketaball():
-    # Llamada a las funciones
-    #if __name__ == "__main__":
-
-    # Obtener todos los registros de la tabla League
-    data_table_leagues = League.objects.all().order_by('name_league')
-
-    # Inicializar el driver
-    driver = inicializar_driver()
-
-    # Abrir navegador en una pastaña en balnco
-    driver.maximize_window()
-    driver.get('https://www.google.com/')
-
-    # Iterar sobre todos los registros obtenidos
-    for registro in data_table_leagues:
-        # print(f'ID: {registro.id_league}, Nombre: {registro.name_league}, Enlace: {registro.link_league}')
-        test(driver, registro.id_league, registro.name_league, registro.link_league)
-        
-
-    print('\nFIN...\n')
-
-    # Cerrar navegador
-    driver.quit()
-
-
-
-            
-            
-#            # END --------- ABRIR NUEVA PESTAÑA                                                                #
-#            # ================================================================================================ #      
-#
-#                    # ================================================================================================ #
-#                    # GUARDAR DATOS EN LA TABLA "leagues"                                                              #
-#                    # ================================================================================================ #
-#                    # 5 Intentos para almacenar los datos en la db
-#                    for i_db_leagues in range(5):
-#                        try:
-#                            # Generar id único aleatoriamente
-#                            id_league_ran = randint(1000, 10000)
-#
-#                            # List a partir de la url de la liga.
-#                            name_league = link_league.split('/')
-#                            # Ej: new_tab_open = ['https:', '', 'www.sofascore.com', 'tournament', 'basketball', 'argentina', 
-#                            # 'super-20', '10701']
-#
-#                            # Extracción del nombre de la url (de la lista "new_tab_open_split").
-#                            name_league = f"{name_league[5]} - {name_league[6]}"
-#                            # Ej: new_name_league = "italia - serie-a2"
-#
-#                            # Crear objeto del modelo League
-#                            tb_leagues = League(id_league=id_league_ran, name_league=name_league, link_league=link_league)
-#
-#                            # Guardar los datos en la tabla de la base de datos
-#                            tb_leagues.save()
-#
-#                            print('\n\n\n', '═'*80, f'\nNueva Liga:\n\t < {tb_leagues.name_league} >')
-#
-#                            print(f"\nSe ha guardado la liga < {tb_leagues.name_league} > correctamente...")
-#
-#                            break
-#                        
-#                        except IntegrityError:
-#                            # Si el id generado ya existe en la tabla, se genera una exception
-#                            print(f'\nEl id {id_league_ran} ya existe en la base de datos.'
-#                                  f'\nGenerando un nuevo id...')
-#                    # END --------- GUARDAR DATOS EN LA TABLA "Leagues"                                                #
-#                    # ================================================================================================ #
-#
-#
-#                    
-#
-#        except Exception as e:
-#            msn_exceptions(type_try='1', e=e)
-#    
-#            # END --------- ITERAR SOBRE CADA LINK DEL PAÍS                                                            #
-#            # ======================================================================================================== #
-
-
-    

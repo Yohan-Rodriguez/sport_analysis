@@ -21,6 +21,7 @@ from webscraping import views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('ws-basketball/', views.ws_basketball_view, name='ws-basketball'),
+    path('ws-basketball-test/', views.ws_basketball_test_view, name='ws-basketball-test'),
     path('test-match/', views.test_match_view, name='test'),
-    path('search-links/', views.searc_links_view, name='search-view')
+    path('search-links/', views.searc_links_view, name='search-view'),
 ]
