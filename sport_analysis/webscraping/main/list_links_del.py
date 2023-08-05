@@ -147,3 +147,4 @@ def list_delete_links():
                     ]
 
     return list_del_link
+

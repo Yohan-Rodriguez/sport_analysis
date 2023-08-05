@@ -7,7 +7,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from .list_css import get_key_value, get_xpath_button_previous, get_div_container_button_season
 from webscraping.models import League
-from.season import search_change_season, click_on_dropdawn_menu
+from .season import search_change_season, click_on_dropdawn_menu, search_button_b
+from webscraping.models import League
 
 
 # Lista de keys que referencian cada variable a buscar en la página web
@@ -77,14 +78,23 @@ def test_catch_data_leagues(driver, id_league, name_league, link_league):
     # END --------- VERIFICAR PRIMERA SEASON CARGADA EN LA LIGA. Que no sea la 23/24 o la 2024 (recien iniciada)       #
     # ================================================================================================================ #
 
+    # ================================================================================================ #
+    # BUTTON "PREVIOUS" INITIAL                                                                        #
+    # ================================================================================================ #
+    # Usar la función "search_button_b" para buscar el "button_previous" dentro la página web
+    tuple_button_previous = search_button_b(driver=driver, flag_no_found_previous_b=True)
+    
+    # "button_previous" es el XPATH localizado del "button_previous"
+    # "flag_no_found_previous_b" indica si se encontró no el XPATH del "button_previous"
+    button_previous, flag_no_found_previous_b, b_previous = tuple_button_previous    
+    # END --------- BUTTON "PREVIOUS" INITIAL                                                          #
+    # ================================================================================================ #
+
     # Integer que indica el conjunto de los XPATH's indicados de cada liga
     pointer_css_s = 0 
 
     # Indica si se encontró o no el conjuto de XPATH's de "10_MATCHES"
     flag_no_found_css_set = True
-
-    # Indica si se encontró no el XPATH del "button_previous"
-    flag_no_found_previous_b = True
 
     # ================================================================================================================ #
     # ITERAR SOBRE LAS SEASON's                                                                                        #
@@ -99,12 +109,12 @@ def test_catch_data_leagues(driver, id_league, name_league, link_league):
             # ======================================================================================================== #
             # Cada iteración a continuación carga 10 partidos nuevos por la acción del "button_previous"
             # while True:
-            for i in range(2):
+            for i_click_on_previous_b in range(4):
                 # Por ahora, el siguiente bloque "try-exception" solo se encarga del "button_previous",
                 # que está al final de este bucle for que controla el evento clic sobre "button_previous"
                 try:
                     # Iterar sobre cada div de partido único
-                    # for i_match in range (10, 0, -1):
+                    # for i_match in range (10, 8, -1):
                     for i_match in range(1, 2, 1):
                         try:
                             # ======================================================================================== #
@@ -144,7 +154,8 @@ def test_catch_data_leagues(driver, id_league, name_league, link_league):
 
                                     except Exception:
                                         if i_xpath_ft >= 4:
-                                            raise Exception(f'\nError: XPATH "ft" no encontrado para el partido {i_match}...')
+                                            raise Exception('\nError: XPATH "ft" no encontrado para el partido '\
+                                                            f'{i_match}...')
                                         
                                 return ft_text, pointer_css_s, flag_no_found_css_set                         
                             # END --------- AUX FUNCTIONS                                                              #
@@ -156,13 +167,14 @@ def test_catch_data_leagues(driver, id_league, name_league, link_league):
                             if flag_no_found_css_set:
                                 # Obtener "XPATH" de la finalización "FT o AET" del partido
                                 set_xpaths = search_ft(key_rx='ft', i_match=i_match, pointer_css_s=pointer_css_s)
+                                # search_ft(): return ft_text, pointer_css_s, flag_no_found_css_set  
                                 
                                 # Desglozar la tupla que retorna la función "search_ft"
-                                ft_text, pointer_css_s, flag_no_found_css_set = set_xpaths[0], set_xpaths[1], set_xpaths[2]
+                                ft_text, pointer_css_s, flag_no_found_css_set = set_xpaths
                                                                     
                             else:
                                 try:
-                                    # Extraeer texto del div de "FT"
+                                    # Extraer texto del div de "FT"
                                     ft_text = get_search_xpath(xpath_temp=pointer_css_s, key_rx='ft', i_match=i_match)
 
                                 # Si ocurre un error inesperado con el conjunto de XPATH's ya encontrado...
@@ -174,12 +186,13 @@ def test_catch_data_leagues(driver, id_league, name_league, link_league):
 
                                     except:
                                         flag_no_found_css_set = True
-                                        raise Exception(f'Buscando posible cambio de XPATH_SET en la liga actual en la Season: <{season_msn}> ...')
+                                        raise Exception('Buscando posible cambio de XPATH_SET en la liga actual en la Season: '\
+                                                        f'<{season_msn}> ...')
 
-                            if (ft_text == 'FT') or (ft_text == 'AET'):                   
-                                
-                                # Diccionario que contendrá los valores (".text") de las variables buscadas
-                                dict_data_match = {}
+                            # Diccionario que contendrá los valores (".text") de las variables buscadas
+                            dict_data_match = {}
+
+                            if (ft_text == 'FT') or (ft_text == 'AET'):                                                   
 
                                 # Iterar sobre la lista de keys del diccionario de los CSS_SELECTOR: ['ft', ..., 'total_a']
                                 # Este for no lleva bloque "try-except "
@@ -223,52 +236,27 @@ def test_catch_data_leagues(driver, id_league, name_league, link_league):
                             else:
                                 print(f'\nPartido en estado: {ft_text}...')
 
-                            # print(dict_data_match)
+                            print(f'\nClic número: {i_click_on_previous_b}.\nPatido número: {i_match}')
+                            print(dict_data_match)
 
                             # END --------- DIV 10 MACTHES                                                             #
                             # ======================================================================================== #
 
                         except Exception as e:
-                            # Teóricamente, está "exception" se debe activar únicamente si "ft_text" falla (si no se encuentra) 
-                            # Para que se cunpla lo anterior, el mensaje de está "exception" debe estrar predecido por 
-                            # raise Exception('\nError: CSS_SELECTOR "ft" no encontrado...')
+                            # Teóricamente, está "exception" se debe activar únicamente si "ft_text" falla (si no se 
+                            # encuentra) Para que se cumpla lo anterior, el mensaje de está "exception" debe estrar 
+                            # predecido por "raise Exception('\nError: CSS_SELECTOR "ft" no encontrado...')"
                             msn_exceptions(type_try='3', e=e)
                             break
                         
                     # ================================================================================================ #
                     # BUTTON "PREVIOUS"                                                                                #
-                    # ================================================================================================ #                    
-                    if flag_no_found_previous_b:
-                    
-                        # Obtener lista de CSS_SELECTOR's del "button_previous"
-                        xpath_previous = get_xpath_button_previous()
-
-                        for b_previous in xpath_previous:
-                            try:
-                                # print(f'Buscando el button con XPATH: {b_previous}...')
-                                # Buscar y dar clic sobre el botón dentro de la página web
-                                button_previous = WebDriverWait(driver, 1).until(EC.presence_of_element_located((By.XPATH, b_previous)))  
-                                driver.execute_script("arguments[0].click();", button_previous)
-
-                                flag_no_found_previous_b = False
-
-                                break
-
-                            except Exception:
-                                if b_previous == xpath_previous[-1]:
-                                    raise Exception(f'\nError al dar clic en "button_previous"...')
-                                
-                                continue
-                            
-                    else:
-                        try:
-                            # print('Dando clic sobre el button con el XPATH ya encontrado: "button_previous"')
-                            driver.execute_script("arguments[0].click();", button_previous)
-
-                        except:
-                            # Reiniciar Flag
-                            flag_no_found_css_set = True
-                            raise Exception('No hay Error (Fin de los partidos de la liga actuaL...)')
+                    # ================================================================================================ #
+                    # Usar la función "search_button_b" para dar clic sobre "button_previous"
+                    #  y capturar el return en una variable sin uso
+                    useless_tuple_button_previous = search_button_b(flag_no_found_previous_b=flag_no_found_previous_b,
+                                                                    driver=driver, button_previous=button_previous, 
+                                                                    b_previous=b_previous)
                     # END --------- BUTTON "PREVIOUS"                                                                  #
                     # ================================================================================================ #
 
@@ -289,6 +277,16 @@ def test_catch_data_leagues(driver, id_league, name_league, link_league):
 
                 # Mensaje a mostrar por consola cada vez que se cambia de season (temporada)
                 season_msn = div_contain_button.text
+
+                # Usar la función "search_button_b" para buscar el "button_previous" dentro de la nueva season
+                tuple_button_previous = search_button_b(driver=driver, flag_no_found_previous_b=True, b_previous=b_previous)
+                
+                # "button_previous" es el XPATH localizado del "button_previous"
+                # "flag_no_found_previous_b" indica si se encontró no el XPATH del "button_previous"
+                button_previous, flag_no_found_previous_b = tuple_button_previous[:-1]
+
+                # Reiniciar Flag porque en este punto ya se han terminado los partidos de la season actual
+                flag_no_found_css_set = True
 
             else:
                 break

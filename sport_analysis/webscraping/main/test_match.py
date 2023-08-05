@@ -7,44 +7,24 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from .list_css import get_key_value, get_xpath_button_previous, get_div_container_button_season
 from webscraping.models import League
+from .season import search_change_season, click_on_dropdawn_menu, search_button_b
+import pandas as pd
 
 
 # Lista de keys que referencian cada variable a buscar en la página web
-list_this_keys = ['ft', 'date', 'home', 'away', 'q1_h', 'q2_h', 'q3_h', 'q4_h', 'q1_a', 'q2_a', 'q3_a', 'q4_a', 'total_h', 'total_a']       
+list_this_keys = ['ft', 'date', 'home', 'away', 'q1_h', 'q2_h', 'q3_h', 
+                  'q4_h', 'q1_a', 'q2_a', 'q3_a', 'q4_a', 'total_h', 'total_a']       
 
 
+# ==================================================================================================================== #
+# MSN EXCEPTIONS                                                                                                       #
+# ==================================================================================================================== #
 def msn_exceptions(type_try, e):
     # Obtener el mensaje de la excepción como una cadena
     mensaje_error = str(e)
     # Imprimir solo el mensaje de error
     print(f"\nError Try ({type_try}):", mensaje_error[:150])
-
-
-
-# ==================================================================================================================== #
-# BUSCAR CSS_SELECTOR BUTTON                                                                                           #
-# ==================================================================================================================== #
-def search_button(driver, selector_css_button, msn):
-    # Salida de emergencia al siguiente bucle para evitar que sea infinito
-    flag_emergency_button = 3
-
-    while True:
-        try:
-            button = driver.find_element(By.XPATH, selector_css_button)
-            break
-
-        except Exception:
-            print(f'\nReintentando obtener CSS_SELECTOR de "{msn}".\nIntentos Restante: {flag_emergency_button} s')
-            time.sleep(1)
-
-            if flag_emergency_button <= 0:
-                button = ''
-                break
-
-            flag_emergency_button -= 1
-
-    return button
-# END --------- BUSCAR CSS_SELECTOR BUTTON                                                                             #
+# END --------- MSN EXCEPTIONS                                                                                         #
 # ==================================================================================================================== #
 
 
@@ -58,7 +38,7 @@ def test():
     driver_path = "drivers/chromedriver.exe"
     driver = webdriver.Chrome(options=options)#, executable_path=driver_path)
 
-    name_league = 'https://www.sofascore.com/tournament/basketball/croatia/druga-muska-liga-jug/16359'
+    name_league = 'https://www.sofascore.com/tournament/basketball/argentina/lnb/1680'
     
     driver.maximize_window()
     driver.get(name_league)
@@ -68,85 +48,165 @@ def test():
 
     print('\n', '═'*100, f'\n\nLiga: < {name_league} >\n', '═'*100)
 
-    # ================================================================================================ #
-    # SELECCIONAR SEASON                                                                               #
-    # ================================================================================================ #
-    # Mensaje a mostrar por consola cada vez que se cambia de season (temporada)
-    season_temp = 1
-    
-    # Integer que indica el conjunto de CSS's indicado de cada liga
-    pointer_css_s = 0 
-    flag_no_found_css_set = True
-    flag_no_found_previous_b = True
+    # Usar la función "search_change_season" para buscar y dvi de "Season"            
+    div_contain_button = search_change_season(driver)
 
-    # Iterar sobre 3 "seasons" de cada liga
-    for season in range(1, 4, 1):
+    # Mensaje a mostrar por consola cada vez que se cambia de season (temporada)
+    season_msn = div_contain_button.text
+    # season_msn = "22/23" o season_msn = "2023"
+
+    # ================================================================================================================ #
+    # VERIFICAR PRIMERA SEASON CARGADA EN LA LIGA. Que no sea la 23/24 o la 2024 (recien iniciada)                     #
+    # ================================================================================================================ #
+    # "23/24" o "2024" (Sobre está temporada no se trabaja)
+    if season_msn[-2:] != '24':
+        pass
+
+    else:
+        # Buscar la season anterior (2023)
+        click_on_dropdawn_menu(driver=driver, div_contain_button=div_contain_button, season=1)
+        div_contain_button = search_change_season(driver)
+        season_msn = div_contain_button.text
+
+        if season_msn[-2:] != '24':
+            pass
+        
+        else:
+            raise Exception('\nNo Season 2023 found...')
+    # END --------- VERIFICAR PRIMERA SEASON CARGADA EN LA LIGA. Que no sea la 23/24 o la 2024 (recien iniciada)       #
+    # ================================================================================================================ #
+
+ # ================================================================================================ #
+    # BUTTON "PREVIOUS" INITIAL                                                                        #
+    # ================================================================================================ #
+    # Usar la función "search_button_b" para buscar el "button_previous" dentro la página web
+    tuple_button_previous = search_button_b(driver=driver, flag_no_found_previous_b=True, initial=True)
+    
+    # "button_previous" es el XPATH localizado del "button_previous"
+    # "flag_no_found_previous_b" indica si se encontró no el XPATH del "button_previous"
+    button_previous, flag_no_found_previous_b, b_previous = tuple_button_previous    
+    # END --------- BUTTON "PREVIOUS" INITIAL                                                          #
+    # ================================================================================================ #
+
+    # Indica si se encontró o no el conjuto de XPATH's de "10_MATCHES"
+    flag_no_found_css_set = True
+
+    # ================================================================================================================ #
+    # ITERAR SOBRE LAS SEASON's                                                                                        #
+    # ================================================================================================================ #
+    # Iterar sobre 3 "seasons" en cada liga
+    for season in range(2):
+        list_dict_matches = []
         try:
-            print('\n', '═'*60, f'\n{name_league} → Season: <{season_temp}>\n', '═'*60)
+            # Integer que indica el conjunto de los XPATH's indicados de cada liga
+            pointer_css_s = 0 
+
+            print('\n', '═'*60, f'\n{name_league} → Season: < {season_msn} >\n', '═'*60)
             
-            # ======================================================================================== #
-            # OBTNER DATOS DE TODOS LOS PARTIDOS DE LA SEASON                                          #
-            # ======================================================================================== #
+            # ======================================================================================================== #
+            # OBTNER LOS DATOS DE TODOS LOS PARTIDOS DE LA SEASON ACTUAL                                               #
+            # ======================================================================================================== #
+            i_click_on_previous_b = 0
             # Cada iteración a continuación carga 10 partidos nuevos por la acción del "button_previous"
-            for i in range(2):
+            while True:
+            # for i_click_on_previous_b in range(4):
                 # Por ahora, el siguiente bloque "try-exception" solo se encarga del "button_previous",
                 # que está al final de este bucle for que controla el evento clic sobre "button_previous"
                 try:
                     # Iterar sobre cada div de partido único
-                    for i_match in range(1, 2, 1):
+                    for i_match in range (10, 0, -1):
+                    # for i_match in range(1, 2, 1):
                         try:
-                            # ==================================================================================== #
-                            # AUX FUNCTIONS                                                                        #
-                            # ==================================================================================== #
+                            # ======================================================================================== #
+                            # AUX FUNCTIONS                                                                            #
+                            # ======================================================================================== #
                             def search_xpath(this_xpath):
-                                this_div = WebDriverWait(driver, 2).until(EC.presence_of_element_located((By.XPATH, this_xpath)))
+                                this_div = WebDriverWait(driver, 1).until(EC.presence_of_element_located((By.XPATH, this_xpath)))
                                 this_div = this_div.text
                                 return this_div
 
 
                             def get_search_xpath(xpath_temp, key_rx, i_match):
-                                # OBTENER "css_selector" 
-                                # Buscar string con CSS indicado en el archivo "list_css.py"
-                                xpath_i = get_key_value(xpath_temp=xpath_temp, key_rx=key_rx, i_match=i_match)
 
-                                # Buscar elemento dentro de la págiina web con el CSS obtenido 
-                                # y obtener el ".text"
+                                try:
+                                    # OBTENER "css_selector" 
+                                    # Buscar string con CSS indicado en el archivo "list_css.py"
+                                    xpath_i = get_key_value(xpath_temp=xpath_temp, key_rx=key_rx, i_match=i_match)
+
+                                    # Buscar elemento dentro de la págiina web con el CSS obtenido 
+                                    # y obtener el ".text"
+
+                                except:                                                                      
+                                    for i_match_try in range(10, 0, -1):
+                                        try:    
+                                            xpath_i = get_key_value(xpath_temp=xpath_temp, key_rx=key_rx, i_match=i_match_try)
+                                            break
+
+                                        except:
+                                            continue
+
                                 div_i = search_xpath(xpath_i)
 
-                                return div_i                                 
-                            # END --------- AUX FUNCTIONS                                                          #
-                            # ==================================================================================== #
+                                return div_i        
+                            
 
-                            # ==================================================================================== #
-                            # DIV 10 MACTHES                                                                       #
-                            # ==================================================================================== #
-                            if flag_no_found_css_set:
-                                # Obtener "css_selector" de la finalización "FT o AET" del partido
-                                for i_xpath_ft in range(5):
+                            def search_ft(key_rx, i_match, pointer_css_s):
+                                # FOR de búsqueda del conjunto de XPATH's que integra cada partido de la liga
+                                for i_xpath_ft in range(6):
                                     try:
-                                        div_ft = get_search_xpath(xpath_temp=i_xpath_ft, key_rx='ft', i_match=i_match)
+                                        ft_text = get_search_xpath(xpath_temp=i_xpath_ft, key_rx=key_rx, i_match=i_match)
                                         
                                         pointer_css_s += i_xpath_ft
+
+                                        # Indicarle al código que no ejecute este fragmetnod de nuevo (for de búsqueda)
+                                        # en la actual liga
                                         flag_no_found_css_set = False
                                     
                                         break                                                
 
                                     except Exception:
-                                        if i_xpath_ft >= 4:
-                                            raise Exception(f'\nError: XPATH "ft" no encontrado para el partido {i_match}...')
-                                    
+                                        if i_xpath_ft >= 5:
+                                            raise Exception('\nError: XPATH "ft" no encontrado para el partido '\
+                                                            f'{i_match}...')
+                                        
+                                        continue
+                                        
+                                return ft_text, pointer_css_s, flag_no_found_css_set                         
+                            # END --------- AUX FUNCTIONS                                                              #
+                            # ======================================================================================== #
+
+                            # ======================================================================================== #
+                            # DIV 10 MACTHES                                                                           #
+                            # ======================================================================================== #
+                            if flag_no_found_css_set:
+                                # Obtener "XPATH" de la finalización "FT o AET" del partido
+                                set_xpaths = search_ft(key_rx='ft', i_match=i_match, pointer_css_s=pointer_css_s)
+                                # search_ft(): return ft_text, pointer_css_s, flag_no_found_css_set  
+                                
+                                # Desglozar la tupla que retorna la función "search_ft"
+                                ft_text, pointer_css_s, flag_no_found_css_set = set_xpaths
+                                                                    
                             else:
                                 try:
-                                    div_ft = get_search_xpath(xpath_temp=pointer_css_s, key_rx='ft', i_match=i_match)
+                                    # Extraer texto del div de "FT"
+                                    ft_text = get_search_xpath(xpath_temp=pointer_css_s, key_rx='ft', i_match=i_match)
 
+                                # Si ocurre un error inesperado con el conjunto de XPATH's ya encontrado...
                                 except:
-                                    flag_no_found_css_set = True
-                                    raise Exception(f'Buscando posible cambio de XPATH_SET en la liga actual en la Season: <{season_temp}> ...')
+                                    try:
+                                        # La explicación de las siguiente líneas está en el fragmento anterior de código
+                                        set_xpaths = search_ft(key_rx='ft', i_match=i_match, pointer_css_s=pointer_css_s)                                        
+                                        ft_text, pointer_css_s, flag_no_found_css_set = set_xpaths[0], set_xpaths[1], set_xpaths[2]
 
-                            if (div_ft == 'FT') or (div_ft == 'AET'):                   
-                                
-                                # Diccionario que contendrá los valores (".text") de las variables buscadas
-                                dict_data_match = {}
+                                    except:
+                                        flag_no_found_css_set = True
+                                        raise Exception('Buscando posible cambio de XPATH_SET en la liga actual en la Season: '\
+                                                        f'<{season_msn}> ...')
+
+                            # Diccionario que contendrá los valores (".text") de las variables buscadas
+                            dict_data_match = {}
+                            # print(ft_text)
+                            if (ft_text == 'FT') or (ft_text == 'AET'):                                                   
 
                                 # Iterar sobre la lista de keys del diccionario de los CSS_SELECTOR: ['ft', ..., 'total_a']
                                 # Este for no lleva bloque "try-except "
@@ -169,6 +229,7 @@ def test():
                                     else:
                                         continue
 
+                                    # print(div_i)
                                     # Agregar nueva "key-value" en el diccionario "dict_data_match"
                                     dict_data_match[i_tags_dict] = div_i
                                     # Lista con las tags: ['ft', 'date', 'home', ..., 'q2_a', 'q3_a', 'q4_a', 'total_a']
@@ -179,7 +240,7 @@ def test():
                                 # 1 = True
                                 over_time = 0
                                 
-                                if div_ft == 'AET':
+                                if ft_text == 'AET':
                                     over_time = 1
 
                                 dict_data_match['OT'] = over_time
@@ -188,132 +249,87 @@ def test():
                                 #print('\n', dict_data_match)
 
                             else:
-                                print(f'\nPartido en estado: {div_ft}...')
+                                print(f'\nPartido en estado: {ft_text}...')
 
+                            print(f'\nClic número: {i_click_on_previous_b}.\nPatido número: {i_match}')
                             # print(dict_data_match)
-                            # END --------- DIV 10 MACTHES                                                         #
-                            # ==================================================================================== #
+                            list_dict_matches.append(dict_data_match)
+
+                            # END --------- DIV 10 MACTHES                                                             #
+                            # ======================================================================================== #
 
                         except Exception as e:
-                            # Teóricamente, está "exception" se debe activar únicamente si "div_ft" falla (si no se encuentra) 
-                            # Para que se cunpla lo anterior, el mensaje de está "exception" debe estrar predecido por 
-                            # raise Exception('\nError: CSS_SELECTOR "ft" no encontrado...')
+                            # Teóricamente, está "exception" se debe activar únicamente si "ft_text" falla (si no se 
+                            # encuentra) Para que se cumpla lo anterior, el mensaje de está "exception" debe estrar 
+                            # predecido por "raise Exception('\nError: CSS_SELECTOR "ft" no encontrado...')"
                             msn_exceptions(type_try='3', e=e)
                             break
                         
-                    # ============================================================================================ #
-                    # BUTTON "PREVIOUS"                                                                            #
-                    # ============================================================================================ #
+                    # ================================================================================================ #
+                    # BUTTON "PREVIOUS"                                                                                #
+                    # ================================================================================================ #
+                    # Usar la función "search_button_b" para dar clic sobre "button_previous"
+                    #  y capturar el return en una variable sin uso
+                    useless_tuple_button_previous = search_button_b(flag_no_found_previous_b=flag_no_found_previous_b,
+                                                                    driver=driver, button_previous=button_previous, 
+                                                                    b_previous=b_previous)
+                    # END --------- BUTTON "PREVIOUS"                                                                  #
+                    # ================================================================================================ #
 
-                    
-                    if flag_no_found_previous_b:
-                    
-                        # Obtener lista de CSS_SELECTOR's del "button_previous"
-                        xpath_previous = get_xpath_button_previous()
-
-                        for b_previous in xpath_previous:
-                            try:
-                                print(f'Buscando el button con XPATH: {b_previous}...')
-                                # Buscar y dar clic sobre el botón dentro de la página web
-                                button_previous = WebDriverWait(driver, 1).until(EC.presence_of_element_located((By.XPATH, b_previous)))  
-                                driver.execute_script("arguments[0].click();", button_previous)
-
-                                flag_no_found_previous_b = False
-
-                                break
-
-                            except Exception:
-                                if b_previous == xpath_previous[-1]:
-                                    raise Exception()
-                                
-                                continue
-                            
-                    else:
-                        try:
-                            print('Dando clic sobre el button con el XPATH ya encontrado: "button_previous"')
-                            driver.execute_script("arguments[0].click();", button_previous)
-
-                        except:
-                            flag_no_found_css_set = True
-                            raise Exception(f'Buscando posible cambio de XPATH_SET en la liga actual en la Season: <{season_temp}> ...')
-                    # END --------- BUTTON "PREVIOUS"                                                              #
-                    # ============================================================================================ #
+                    i_click_on_previous_b += 1
 
                 except Exception as e:
-                    msn_exceptions(type_try='2', e=f'\nError al dar clic en "button_previous"...')
+                    msn_exceptions(type_try='2', e=e)
                     # Ir a la siguiente "Season" porque en la actual ya no está disponible "button_previous"
                     break
-            # END --------- OBTNER DATOS DE TODOS LOS PARTIDOS DE LA SEASON                            #
-            # ======================================================================================== #
+            # END --------- OBTNER LOS DATOS DE TODOS LOS PARTIDOS DE LA SEASON ACTUAL                                 #
+            # ======================================================================================================== #
 
-            # ======================================================================================== #
-            # SELECCIONAR NUEVA SEASON                                                                 #
-            # ======================================================================================== #                            
+            # List a partir de la url de la liga.
+            list_name_league = name_league.split('/')
+            # Ej: new_tab_open = ['https:', '', 'www.sofascore.com', 'tournament', 'basketball', 'argentina', 
+            # 'super-20', '10701']
+            
+            # Extracción del nombre de la url (de la lista "list_name_league").
+            name_league = f"{list_name_league[5]} - {list_name_league[6]}"
+            # Ej: new_name_league = "italia - serie-a2"
+
+            df_matches = pd.DataFrame(list_dict_matches)
+            print(df_matches)
+
+            df_matches.to_csv(f'C:\\Users\\ASUS\\Desktop\\leagues\\{name_league} ({season_msn[-2:]}).csv', index=False)
+
+            # ======================================================================================================== #
+            # SELECCIONAR NUEVA SEASON                                                                                 #
+            # ======================================================================================================== #                            
             # El CAMBIO de "season" se realiza solo una vez para recopilar datos de 2 "seasons"
-            if season < 2:                             
+            if (season + 1) < 2:
+                # Desplegar menú de temporadas y dar clic en una nueva temporada
+                click_on_dropdawn_menu(driver=driver, div_contain_button=div_contain_button, season=season+1)
 
-                # Traer la lista de los XPATH del cambio de Season
-                list_xpath_div_b = get_div_container_button_season()
+                # Mensaje a mostrar por consola cada vez que se cambia de season (temporada)
+                season_msn = div_contain_button.text
 
-                # Iterar sonre la lista de CSS_SELECTOR's de Season's
-                for xpath_div_contain_b in list_xpath_div_b:
-                    try:
-                        # Buscar el xpath dentro de la página web 
-                        div_contain_button = driver.find_element(By.XPATH, xpath_div_contain_b) 
-                        
-                        # Dentro del div principal, encontrar el botón
-                        button_menu = div_contain_button.find_element(By.TAG_NAME, 'button')
+                # Usar la función "search_button_b" para buscar el "button_previous" dentro de la nueva season
+                tuple_button_previous = search_button_b(driver=driver, flag_no_found_previous_b=True, b_previous=b_previous)
+                
+                # "button_previous" es el XPATH localizado del "button_previous"
+                # "flag_no_found_previous_b" indica si se encontró no el XPATH del "button_previous"
+                button_previous, flag_no_found_previous_b = tuple_button_previous[:-1]
 
-                        # Obtener el valor del atributo "aria-controls" del botón
-                        valor_aria_controls = button_menu.get_attribute('aria-controls')
-                        # Ejemplo: valor_aria_controls = 'downshift-1024-menu'
-
-                        # Extraer el número toggle del valor del atributo "aria-controls" para usar en el "css_buton_menu"
-                        num_toggle = valor_aria_controls.split('-')[1]
-                        
-                        # CSS del botón del menú despegable 
-                        css_button_menu = f'#downshift-{num_toggle}-toggle-button'
-                        
-                        # Bsucar el botón del menú despegable dentro de la página web
-                        button_season = driver.find_element(By.CSS_SELECTOR, css_button_menu)
-
-                        # Obtener el ménu despegable
-                        button_season.click()
-                        
-                        # CSS de la lista desplegable que contiene las temporadas (sesons)
-                        css_ul = f'#{valor_aria_controls}'
-                        # Ejemplo: css_ul = #downshift-1024-menu
-                        
-                        # Esperar a que el elemento <ul> se despliegue después de hacer clic en el botón
-                        ul_element = WebDriverWait(driver, 1).until(EC.presence_of_element_located((By.CSS_SELECTOR, css_ul)))  
-                        
-                        # Acceder a las opciones dentro del <ul>
-                        opciones_ul = ul_element.find_elements(By.TAG_NAME, 'li')
-                        
-                        # Hacer clic en una opción específica
-                        opciones_ul[season].click()                       
-                        
-                        # Este valor solo se usa para ser mostraddo en el mensaje por consola
-                        season_temp += 1
-                        
-                        break
-
-                    except Exception as e:
-                        # Si ya no hay más elementos sobre los que iterar, lanzar la siguiente exception
-                        if xpath_div_contain_b == list_xpath_div_b[-1]:
-                            raise Exception(f'\nERROR: XPATH del cambio de Season no encontrado...\n{e}')
+                # Reiniciar Flag porque en este punto ya se han terminado los partidos de la season actual
+                flag_no_found_css_set = True
 
             else:
                 break
-            # END --------- SELECCIONAR NUEVA SEASON                                                   #
-            # ======================================================================================== #
+            # END --------- SELECCIONAR NUEVA SEASON                                                                   #
+            # ======================================================================================================== #          
         
         except Exception as e:
             msn_exceptions(type_try='1', e=e)
             break
-    # END --------- SELECCIONAR SEASON                                                                 #
-    # ================================================================================================ #
-
+    # END --------- ITERAR SOBRE LAS SEASON's                                                                          #
+    # ================================================================================================================ #
     # Cerrar el navegador
     driver.quit()      
 
