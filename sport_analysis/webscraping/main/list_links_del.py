@@ -99,6 +99,8 @@ def list_delete_links():
                         'https://www.sofascore.com/tournament/basketball/international/u19-world-cup/887',
                         'https://www.sofascore.com/tournament/basketball/international/olympic-games-qualification/432',
                         'https://www.sofascore.com/tournament/basketball/international/u20-fiba-eurobasket-div-a-women/888',
+                        'https://www.sofascore.com/tournament/basketball/international/fiba-asia-cup/943',
+                        'https://www.sofascore.com/tournament/basketball/international/fiba-world-cup-qualification-africa/10460',
                         'https://www.sofascore.com/tournament/basketball/international/club-friendly-games/1195',
                         'https://www.sofascore.com/tournament/basketball/international/basketball-africa-league/16968',
                         'https://www.sofascore.com/tournament/basketball/australia/nbl-1-wildcard-women/18552',
@@ -141,9 +143,23 @@ def list_delete_links():
                         'https://www.sofascore.com/tournament/basketball/serbia/radivoj-korac-cup/10188',
                         'https://www.sofascore.com/tournament/basketball/bosnia-herzegovina/druga-liga-republike-srpske-centar/20334',
                         'https://www.sofascore.com/tournament/basketball/usa/nba-all-star-game/875',
+                        'https://www.sofascore.com/tournament/basketball/usa/ncaa-division-ii-national-championship/13424',
+                        'https://www.sofascore.com/tournament/basketball/usa/the-basketball-tournament/19020',
                         'https://www.sofascore.com/tournament/basketball/finland/1-division/20114',
                         'https://www.sofascore.com/tournament/basketball/israel/league-cup/1193',
-                        'https://www.sofascore.com/tournament/basketball/international/fiba-south-american-championship/1796'
+                        'https://www.sofascore.com/tournament/basketball/international/fiba-south-american-championship/1796',
+
+                        # Estás ligas las voy a hacer individualmente por problemas especificos de XPATH
+                        'https://www.sofascore.com/tournament/basketball/international/eurocup/141#42900',
+                        'https://www.sofascore.com/tournament/basketball/usa/ncaa-men/648',
+                        'https://www.sofascore.com/tournament/basketball/usa/ncaa-march-madness-division-1/13434',
+                        'https://www.sofascore.com/tournament/basketball/usa/ncaa-division-i-national-championship-women/16718',
+                        'https://www.sofascore.com/tournament/basketball/usa/ncaa-women/10664',
+                        'https://www.sofascore.com/tournament/basketball/international/balkan-international-basketball-league/2003',
+                        'https://www.sofascore.com/tournament/basketball/international/eurocup/141',
+
+                        # Está liga ya tiene su .csv listo
+                        'https://www.sofascore.com/tournament/basketball/argentina/lnb/1680',
                     ]
 
     return list_del_link

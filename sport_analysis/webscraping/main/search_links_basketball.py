@@ -60,28 +60,24 @@ def get_links():
     while True:
     # for i in range(3):
         try:
-            # CSS de cada país
-            css_contries = '#__next > main > div > div.sc-hLBbgP.sc-eDvSVe.gjJmZQ.fEHohf.sc-836c558d-1.eDNgWX > div.sc'\
-                           '-hLBbgP.bMQfbT.sc-836c558d-2.leSghq > div.sc-hLBbgP.dRtNhU > div > div.sc-hLBbgP.gRCqqZ > '\
-                            f'a:nth-child({i_country}) > div > img'  
+            # CSS de cada paísxpath_div_link
+            xpath__img_contries =  f'//*[@id="__next"]/main/div/div[1]/div[1]/div[4]/div/div[2]/a[{i_country}]/div/img'                                                              
 
             try:
                 # Clic sobre cada país para abirir sus respectivas ligas    
-                # div_countries = driver.find_element(By.CSS_SELECTOR, css_contries)
-                div_countries = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.CSS_SELECTOR, css_contries)))
-                div_countries.click()
+                # div_countries = driver.find_element(By.XPATH, css_contries)
+                div_countries = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH, xpath__img_contries)))
+                driver.execute_script("arguments[0].click();", div_countries)
 
             except:
                 print('\nSe terminaron los paises u ocurrió un erro al acceder a un país...')
                 break
 
             # CSS  del contenedor de las ligas de un país específico
-            css_div_link = '#__next > main > div > div.sc-hLBbgP.sc-eDvSVe.gjJmZQ.fEHohf.sc-836c558d-1.eDNgWX > div.sc'\
-                           '-hLBbgP.bMQfbT.sc-836c558d-2.leSghq > div.sc-hLBbgP.dRtNhU > div > div.sc-hLBbgP.gRCqqZ > '\
-                            'div'
-            
+            xpath_div_link = '//*[@id="__next"]/main/div/div[1]/div[1]/div[4]/div/div[2]/div'
+
             # Captar la información del contenedor de ligas
-            div_links_leagues = WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.CSS_SELECTOR, css_div_link)))
+            div_links_leagues = WebDriverWait(driver, 3).until(EC.element_to_be_clickable((By.XPATH, xpath_div_link)))
 
             # ======================================================================================================== #
             # ITERAR SOBRE CADA LINK DEL PAÍS                                                                          #

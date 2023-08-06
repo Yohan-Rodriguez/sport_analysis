@@ -19,11 +19,11 @@ list_this_keys = ['ft', 'date', 'home', 'away', 'q1_h', 'q2_h', 'q3_h',
 # ==================================================================================================================== #
 # MSN EXCEPTIONS                                                                                                       #
 # ==================================================================================================================== #
-def msn_exceptions(type_try, e):
+def msn_exceptions(type_try, e, info_match='No data about click and match...'):
     # Obtener el mensaje de la excepción como una cadena
     mensaje_error = str(e)
     # Imprimir solo el mensaje de error
-    print(f"\nError Try ({type_try}):", mensaje_error[:150])
+    print(f"\n{info_match}...\nError Try ({type_try}):", mensaje_error[:150])
 # END --------- MSN EXCEPTIONS                                                                                         #
 # ==================================================================================================================== #
 
@@ -38,13 +38,21 @@ def test():
     driver_path = "drivers/chromedriver.exe"
     driver = webdriver.Chrome(options=options)#, executable_path=driver_path)
 
-    name_league = 'https://www.sofascore.com/tournament/basketball/argentina/lnb/1680'
+    name_league = 'https://www.sofascore.com/tournament/basketball/international/europe-cup/2165'
     
     driver.maximize_window()
     driver.get(name_league)
+    # List a partir de la url de la liga.
     # END --------- CHROME DRIVER CONNECTION                                                                           #
     # ================================================================================================================ #
-
+    
+    list_name_league = name_league.split('/')
+    # Ej: new_tab_open = ['https:', '', 'www.sofascore.com', 'tournament', 'basketball', 'argentina', 
+    # 'super-20', '10701']
+    
+    # Extracción del nombre de la url (de la lista "list_name_league").
+    name_league = f"{list_name_league[5]} - {list_name_league[6]}"
+    # Ej: new_name_league = "italia - serie-a2"
 
     print('\n', '═'*100, f'\n\nLiga: < {name_league} >\n', '═'*100)
 
@@ -59,7 +67,9 @@ def test():
     # VERIFICAR PRIMERA SEASON CARGADA EN LA LIGA. Que no sea la 23/24 o la 2024 (recien iniciada)                     #
     # ================================================================================================================ #
     # "23/24" o "2024" (Sobre está temporada no se trabaja)
-    if season_msn[-2:] != '24':
+    initial_change_season = 1
+    
+    if season_msn[-2:] not in ['24']:
         pass
 
     else:
@@ -67,8 +77,9 @@ def test():
         click_on_dropdawn_menu(driver=driver, div_contain_button=div_contain_button, season=1)
         div_contain_button = search_change_season(driver)
         season_msn = div_contain_button.text
+        initial_change_season += 1
 
-        if season_msn[-2:] != '24':
+        if season_msn[-2:] not in ['24']:
             pass
         
         else:
@@ -76,7 +87,7 @@ def test():
     # END --------- VERIFICAR PRIMERA SEASON CARGADA EN LA LIGA. Que no sea la 23/24 o la 2024 (recien iniciada)       #
     # ================================================================================================================ #
 
- # ================================================================================================ #
+    # ================================================================================================ #
     # BUTTON "PREVIOUS" INITIAL                                                                        #
     # ================================================================================================ #
     # Usar la función "search_button_b" para buscar el "button_previous" dentro la página web
@@ -95,7 +106,8 @@ def test():
     # ITERAR SOBRE LAS SEASON's                                                                                        #
     # ================================================================================================================ #
     # Iterar sobre 3 "seasons" en cada liga
-    for season in range(2):
+    num_seasons_catch = 3
+    for season in range(num_seasons_catch):
         list_dict_matches = []
         try:
             # Integer que indica el conjunto de los XPATH's indicados de cada liga
@@ -108,14 +120,14 @@ def test():
             # ======================================================================================================== #
             i_click_on_previous_b = 0
             # Cada iteración a continuación carga 10 partidos nuevos por la acción del "button_previous"
-            while True:
-            # for i_click_on_previous_b in range(4):
+            # while True:
+            for i_click_on_previous_b in range(3):
                 # Por ahora, el siguiente bloque "try-exception" solo se encarga del "button_previous",
                 # que está al final de este bucle for que controla el evento clic sobre "button_previous"
                 try:
                     # Iterar sobre cada div de partido único
-                    for i_match in range (10, 0, -1):
-                    # for i_match in range(1, 2, 1):
+                    # for i_match in range (10, 0, -1):
+                    for i_match in range(1, 2, 1):
                         try:
                             # ======================================================================================== #
                             # AUX FUNCTIONS                                                                            #
@@ -152,7 +164,7 @@ def test():
 
                             def search_ft(key_rx, i_match, pointer_css_s):
                                 # FOR de búsqueda del conjunto de XPATH's que integra cada partido de la liga
-                                for i_xpath_ft in range(6):
+                                for i_xpath_ft in range(12):
                                     try:
                                         ft_text = get_search_xpath(xpath_temp=i_xpath_ft, key_rx=key_rx, i_match=i_match)
                                         
@@ -165,7 +177,7 @@ def test():
                                         break                                                
 
                                     except Exception:
-                                        if i_xpath_ft >= 5:
+                                        if i_xpath_ft >= 11:
                                             raise Exception('\nError: XPATH "ft" no encontrado para el partido '\
                                                             f'{i_match}...')
                                         
@@ -196,7 +208,7 @@ def test():
                                     try:
                                         # La explicación de las siguiente líneas está en el fragmento anterior de código
                                         set_xpaths = search_ft(key_rx='ft', i_match=i_match, pointer_css_s=pointer_css_s)                                        
-                                        ft_text, pointer_css_s, flag_no_found_css_set = set_xpaths[0], set_xpaths[1], set_xpaths[2]
+                                        ft_text, pointer_css_s, flag_no_found_css_set = set_xpaths
 
                                     except:
                                         flag_no_found_css_set = True
@@ -249,11 +261,45 @@ def test():
                                 #print('\n', dict_data_match)
 
                             else:
-                                print(f'\nPartido en estado: {ft_text}...')
+                                raise Exception(f'Partido en estado: {ft_text}...')
+                                # print(f'\nClic número: {i_click_on_previous_b}.\nPartido número: {i_match}')
+                                # print(f'Partido en estado: {ft_text}...')
 
-                            print(f'\nClic número: {i_click_on_previous_b}.\nPatido número: {i_match}')
+                            
                             # print(dict_data_match)
-                            list_dict_matches.append(dict_data_match)
+                            # Acceder a elementos específicos del diccionario
+                            dict_home = {
+                                            'Season': season_msn,
+                                            'Click':i_click_on_previous_b,
+                                            'Partido': i_match,
+                                            'Date': dict_data_match['date'],
+                                            'Name_Team': dict_data_match['home'],
+                                            'Is_Home': 1,
+                                            'Q1': dict_data_match['q1_h'],
+                                            'Q2': dict_data_match['q2_h'],
+                                            'Q3': dict_data_match['q3_h'],
+                                            'Q4': dict_data_match['q4_h'],
+                                            'Total': dict_data_match['total_h'],
+                                            'OT': dict_data_match['OT'],
+                                        }
+
+                            dict_away = {
+                                            'Season': season_msn,
+                                            'Click':i_click_on_previous_b,
+                                            'Partido': i_match,
+                                            'Date': dict_data_match['date'],
+                                            'Name_Team': dict_data_match['away'],
+                                            'Is_Home': 0,
+                                            'Q1': dict_data_match['q1_a'],
+                                            'Q2': dict_data_match['q2_a'],
+                                            'Q3': dict_data_match['q3_a'],
+                                            'Q4': dict_data_match['q4_a'],
+                                            'Total': dict_data_match['total_a'],
+                                            'OT': dict_data_match['OT'],
+                                        }
+                            
+                            list_dict_matches.append(dict_home)
+                            list_dict_matches.append(dict_away)
 
                             # END --------- DIV 10 MACTHES                                                             #
                             # ======================================================================================== #
@@ -262,7 +308,8 @@ def test():
                             # Teóricamente, está "exception" se debe activar únicamente si "ft_text" falla (si no se 
                             # encuentra) Para que se cumpla lo anterior, el mensaje de está "exception" debe estrar 
                             # predecido por "raise Exception('\nError: CSS_SELECTOR "ft" no encontrado...')"
-                            msn_exceptions(type_try='3', e=e)
+                            msn_exceptions(info_match=f'\nClic número: {i_click_on_previous_b}.\nPartido número: {i_match}',
+                                           type_try='4', e=e)
                             break
                         
                     # ================================================================================================ #
@@ -279,39 +326,39 @@ def test():
                     i_click_on_previous_b += 1
 
                 except Exception as e:
-                    msn_exceptions(type_try='2', e=e)
+                    msn_exceptions(info_match=f'Clic número: {i_click_on_previous_b}.\nPartido número: {i_match}',
+                                   type_try='3', e=e)
                     # Ir a la siguiente "Season" porque en la actual ya no está disponible "button_previous"
                     break
             # END --------- OBTNER LOS DATOS DE TODOS LOS PARTIDOS DE LA SEASON ACTUAL                                 #
             # ======================================================================================================== #
-
-            # List a partir de la url de la liga.
-            list_name_league = name_league.split('/')
-            # Ej: new_tab_open = ['https:', '', 'www.sofascore.com', 'tournament', 'basketball', 'argentina', 
-            # 'super-20', '10701']
             
-            # Extracción del nombre de la url (de la lista "list_name_league").
-            name_league = f"{list_name_league[5]} - {list_name_league[6]}"
-            # Ej: new_name_league = "italia - serie-a2"
+            try:
+                df_matches = pd.DataFrame(list_dict_matches)
+                print('\n')
+                print(df_matches)
 
-            df_matches = pd.DataFrame(list_dict_matches)
-            print(df_matches)
-
-            df_matches.to_csv(f'C:\\Users\\ASUS\\Desktop\\leagues\\{name_league} ({season_msn[-2:]}).csv', index=False)
-
+                # df_matches.to_csv(f'C:\\Users\\ASUS\\Desktop\\leagues\\{name_league} ({season_msn[-2:]}).csv', index=False,
+                #                   encoding='latin-1')
+            
+            except Exception as e:
+                print('\n¿Data Frame vacío?')
+                msn_exceptions(type_try='2', e=e)
+            
             # ======================================================================================================== #
             # SELECCIONAR NUEVA SEASON                                                                                 #
             # ======================================================================================================== #                            
             # El CAMBIO de "season" se realiza solo una vez para recopilar datos de 2 "seasons"
-            if (season + 1) < 2:
+            if season < (num_seasons_catch-1):
                 # Desplegar menú de temporadas y dar clic en una nueva temporada
-                click_on_dropdawn_menu(driver=driver, div_contain_button=div_contain_button, season=season+1)
+                click_on_dropdawn_menu(driver=driver, div_contain_button=div_contain_button, season=season+initial_change_season)
 
                 # Mensaje a mostrar por consola cada vez que se cambia de season (temporada)
                 season_msn = div_contain_button.text
 
                 # Usar la función "search_button_b" para buscar el "button_previous" dentro de la nueva season
-                tuple_button_previous = search_button_b(driver=driver, flag_no_found_previous_b=True, b_previous=b_previous)
+                tuple_button_previous = search_button_b(driver=driver, flag_no_found_previous_b=True, b_previous=b_previous,
+                                                        initial=True)
                 
                 # "button_previous" es el XPATH localizado del "button_previous"
                 # "flag_no_found_previous_b" indica si se encontró no el XPATH del "button_previous"

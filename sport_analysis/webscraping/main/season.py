@@ -99,6 +99,7 @@ def search_button_b(driver, flag_no_found_previous_b, button_previous=None, b_pr
             except Exception:
                 if b_previous == xpath_previous[-1]:
 
+                    # Si initial=False
                     if not initial:
                         raise Exception(f'\nError al dar clic en "button_previous"...')
                     
@@ -116,7 +117,7 @@ def search_button_b(driver, flag_no_found_previous_b, button_previous=None, b_pr
             try:
                 button_previous = WebDriverWait(driver, 4).until(EC.presence_of_element_located((By.XPATH, b_previous)))
                 driver.execute_script("arguments[0].click();", button_previous)
-                print('\nCheck')
+                # print('\nCheck')
             except:
                 raise Exception('No hay Error (Fin de los partidos de la liga actuaL...)')
         
