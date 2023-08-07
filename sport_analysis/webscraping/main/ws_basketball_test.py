@@ -5,7 +5,7 @@ from random import randint
 from django.db.utils import IntegrityError
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from .list_css import get_key_value, get_xpath_button_previous, get_div_container_button_season
+from .list_css import get_key_value
 from webscraping.models import League
 from .season import search_change_season, click_on_dropdawn_menu, search_button_b
 import pandas as pd
@@ -100,17 +100,18 @@ def test_catch_data_leagues(driver, id_league, name_league, link_league):
     # ITERAR SOBRE LAS SEASON's                                                                                        #
     # ================================================================================================================ #
     # Iterar sobre 3 "seasons" en cada liga
-    # Segundos en 12 minutos
-    intervalo_iteracion = 720
-    
+    # Sumatoria del tiempo tomado para iterar sobre todas las season de la liga  actual
+    time_seasons = 0
+
+    # Timepo máximo para iterar sobre una sola seson (720 segundos = 12 minutos)
+    time_max_per_season = 720
+
     # Número de sesiones a obtener data
     num_seasons_catch = 3
 
     for season in range(num_seasons_catch):
         # Registrar el tiempo de inicio de la iteración
         time_start_season = time.time()
-        
-    #    if 
 
         list_dict_matches = []
         try:
@@ -351,9 +352,9 @@ def test_catch_data_leagues(driver, id_league, name_league, link_league):
             
             # ======================================================================================================== #
             # SELECCIONAR NUEVA SEASON                                                                                 #
-            # ======================================================================================================== #       
-            # Desplegar menú de temporadas y dar clic en una nueva temporada
-            if season < (num_seasons_catch-1):
+            # ======================================================================================================== #
+            def choose_season(driver, div_contain_button, season, initial_change_season, b_previous):
+
                 click_on_dropdawn_menu(driver=driver, div_contain_button=div_contain_button, season=season+initial_change_season)
 
                 # Mensaje a mostrar por consola cada vez que se cambia de season (temporada)
@@ -369,6 +370,49 @@ def test_catch_data_leagues(driver, id_league, name_league, link_league):
 
                 # Reiniciar Flag porque en este punto ya se han terminado los partidos de la season actual
                 flag_no_found_css_set = True
+
+                return season_msn, button_previous, flag_no_found_previous_b, flag_no_found_css_set
+
+
+            
+            # Registrar el tiempo final de la iteración sobre la season actual     
+            time_end_season = time.time()
+
+            # Timepo total tomado para iterar sobre la actual season
+            total_time_season = time_end_season - time_start_season
+            
+            # Si el tiempo usado para iterar sobre la actual season no ha superado el tiempo maximo destinado,
+            # cambiar de season
+            if (total_time_season) < (time_max_per_season * (season+1)):
+                # Desplegar menú de temporadas y dar clic en una nueva temporada
+                if season < (num_seasons_catch-1):
+                    # Cambiar season por medio de la función auxiliar "choose_season()"
+                    news_values_parameters_season = choose_season(season=season, initial_change_season=initial_change_season,
+                                                                  driver=driver, div_contain_button=div_contain_button, 
+                                                                  b_previous=b_previous)
+                                        
+                    # Nuevos calores para las variables que controlan el flujo del código de cada iteración de season
+                    season_msn, button_previous, flag_no_found_previous_b, flag_no_found_css_set = news_values_parameters_season
+
+                    # Obtener la suma total actual de tiempo transcurrido para iterar todas las season iteradas hasta aqui
+                    time_seasons += time_end_season
+            
+            else:
+                # Recargar la página
+                driver.refresh()
+
+                # Desplegar menú de temporadas y dar clic en una nueva temporada
+                if season < (num_seasons_catch-1):
+                    # Cambiar season por medio de la función auxiliar "choose_season()"
+                    news_values_parameters_season = choose_season(season=season, initial_change_season=initial_change_season,
+                                                                  driver=driver, div_contain_button=div_contain_button, 
+                                                                  b_previous=b_previous)
+                                        
+                    # Nuevos calores para las variables que controlan el flujo del código de cada iteración de season
+                    season_msn, button_previous, flag_no_found_previous_b, flag_no_found_css_set = news_values_parameters_season
+
+                    # Obtener la suma total actual de tiempo transcurrido para iterar todas las season iteradas hasta aqui
+                    time_seasons += time_end_season
             # END --------- SELECCIONAR NUEVA SEASON                                                                   #
             # ======================================================================================================== #          
         

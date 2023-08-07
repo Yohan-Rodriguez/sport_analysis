@@ -158,8 +158,9 @@ def list_delete_links():
                         'https://www.sofascore.com/tournament/basketball/international/balkan-international-basketball-league/2003',
                         'https://www.sofascore.com/tournament/basketball/international/eurocup/141',
 
-                        # Está liga ya tiene su .csv listo
+                        # Estás ligas ya tienen su .csv listo
                         'https://www.sofascore.com/tournament/basketball/argentina/lnb/1680',
+                        'https://www.sofascore.com/tournament/basketball/usa/nba/132'
                     ]
 
     return list_del_link
