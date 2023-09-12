@@ -24,4 +24,6 @@ urlpatterns = [
     path('ws-basketball-test/', views.ws_basketball_test_view, name='ws-basketball-test'),
     path('test-match/', views.test_match_view, name='test'),
     path('search-links/', views.searc_links_view, name='search-view'),
+    path('ws-nba/', views.ws_nba, name='ws-nba'),
+    
 ]

@@ -2,7 +2,7 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from .list_css import get_xpath_button_previous
+from webscraping.main.basketball_all_leagues.list_css import get_xpath_button_previous
 
 
 # ==================================================================================================================== #
@@ -52,7 +52,7 @@ def click_on_dropdawn_menu(driver, div_contain_button, season):
     # Bsucar el botón del menú despegable dentro de la página web
     button_season = driver.find_element(By.CSS_SELECTOR, css_button_menu)
 
-    # Obtener el ménu despegable
+    # Obtener el menú despegable
     # button_season.click()
     driver.execute_script("arguments[0].click();", button_season)
     

@@ -1,10 +1,15 @@
-from django.shortcuts import render
 from django.http import HttpResponse
-from .main.search_links_basketball import get_links
-from .main.ws_basketball import get_and_set_data_basketaball
-from .main.ws_basketball_test import test_get_and_set_data_basketaball
-from .main.test_match import test
+from webscraping.main.basketball_all_leagues.search_links_basketball import get_links
+from webscraping.main.basketball_all_leagues.ws_basketball import get_and_set_data_basketaball
+from webscraping.main.basketball_all_leagues.ws_basketball_test import test_get_and_set_data_basketaball
+from webscraping.main.basketball_all_leagues.test_match import test
+from webscraping.main.nba.ws_nba import get_and_set_data_nba
 
+
+def ws_nba(request):
+    get_and_set_data_nba()
+
+    return HttpResponse('NBA TEST!')
 
 
 # Create your views here.
