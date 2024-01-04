@@ -104,38 +104,43 @@ def get_and_set_data_nba():
     # Abrir navegador
     driver.maximize_window()
     driver.get('https://www.sofascore.com/tournament/basketball/usa/nba/132')
-    # driver.get('https://www.sofascore.com/team/basketball/milwaukee-bucks/3410')
 
-    for i_teams in range(1, 4, 1):
+    for i_teams in range(2, 5, 1):
         # ============================================================================================================ #
         # CHOOSE NBA LEAGUE                                                                                            #
         # ============================================================================================================ #
-        choose_options_menu(driver=driver, num_toggle='10', choose_option=8)
+        choose_options_menu(driver=driver, choose_option=i_teams)
         # END --------- CHOOSE NBA LEAGUE                                                                              #
         # ============================================================================================================ #
+
+        # Continuar aquí con la lógica para acceder a cada partido de la termporada de la NBA seleccionada:
+        for i_matches in range(10, 0, -1):
+
  
-        # Buscar el XPAHT de cada uno de los 30 equipos
-        div_team = driver.find_element(By.XPATH, '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[2]/div[2]/div[3]'\
-                                             f'/div/a[{i_teams}]/div/div[3]/div/span')
+    #     # Buscar el XPAHT de cada uno de los 30 equipos
+    #     div_team = driver.find_element(By.XPATH, '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[2]/div[2]/div[3]'\
+    #                                          f'/div/a[{i_teams}]/div/div[3]/div/span')
 
-        name_team = div_team.text
-        #name_team = ''
-        set_name_dict_team(name_team)
+    #     name_team = div_team.text
+    #     #name_team = ''
+    #     set_name_dict_team(name_team)
 
-        driver.execute_script("arguments[0].click();", div_team)
+    #     driver.execute_script("arguments[0].click();", div_team)
 
-        storage_players(driver, name_team)
+    #     storage_players(driver, name_team)
 
-        # xpath_back = '//*[@id="__next"]/main/div[2]/div/div[2]/div[1]/div[2]/div[3]/div[3]/div[3]/div[2]/a[1]/div'
-        # div_back = driver.find_element(By.XPATH, xpath_back)
-        # driver.execute_script("arguments[0].click();", div_back)
+    #     # xpath_back = '//*[@id="__next"]/main/div[2]/div/div[2]/div[1]/div[2]/div[3]/div[3]/div[3]/div[2]/a[1]/div'
+    #     # div_back = driver.find_element(By.XPATH, xpath_back)
+    #     # driver.execute_script("arguments[0].click();", div_back)
                 
-        print('\nREGRESAR...!')
+    #     print('\nREGRESAR...!')
 
-        driver.get('https://www.sofascore.com/tournament/basketball/usa/nba/132')
+    #     driver.get('https://www.sofascore.com/tournament/basketball/usa/nba/132')
 
-        print('\nSe regresó a la página incial...!')
+    #     print('\nSe regresó a la página incial...!')
 
+        time.sleep(3)
+    
     # Cerrar navegador
     driver.quit()
 
