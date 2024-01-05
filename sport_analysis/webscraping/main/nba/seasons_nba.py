@@ -27,9 +27,7 @@ def choose_options_menu(driver, choose_option):
         >>> choose_options_menu(driver, choose_option=4)
         Clic para accedeer a la termporada que esta en la posición 4 de la lista <ul> desplegada
         >>> choose_options_menu(driver, choose_option=10)
-        Clic para accedeer a la termporada que esta en la posición 10 de la lista <ul> desplegada
-        
-        ValueError: n debe ser un número entero no negativo.
+        Clic para accedeer a la termporada que esta en la posición 10 de la lista <ul> desplegada        
     """
 
     try:

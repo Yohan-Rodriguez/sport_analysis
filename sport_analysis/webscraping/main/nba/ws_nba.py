@@ -5,6 +5,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from .seasons_nba import choose_options_menu
 from .dictionaries_db import set_name_dict_team, set_info_players_in_dict_team, get_dict_teams
+from .statistics_extraction import get_statistics_match
 
 
 
@@ -97,6 +98,17 @@ def inicializar_driver():
     return driver
 
 
+def click_on(driver, xpath_element):
+
+    # Buscar el elemento asociado al parido "x" dentro del div 10
+    element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, xpath_element)))
+    # Clic sobre el elemtno encontrado
+    # driver.execute_script("arguments[0].click();", element)
+    element.click()
+
+    return element
+
+
 def get_and_set_data_nba():
     # Inicializar el driver
     driver = inicializar_driver()
@@ -105,7 +117,8 @@ def get_and_set_data_nba():
     driver.maximize_window()
     driver.get('https://www.sofascore.com/tournament/basketball/usa/nba/132')
 
-    for i_teams in range(2, 5, 1):
+    # For de selección de season
+    for i_teams in range(2, 3, 1):
         # ============================================================================================================ #
         # CHOOSE NBA LEAGUE                                                                                            #
         # ============================================================================================================ #
@@ -113,8 +126,25 @@ def get_and_set_data_nba():
         # END --------- CHOOSE NBA LEAGUE                                                                              #
         # ============================================================================================================ #
 
-        # Continuar aquí con la lógica para acceder a cada partido de la termporada de la NBA seleccionada:
-        for i_matches in range(10, 0, -1):
+        # Acceder a cada partido de la termporada de la NBA seleccionada:
+        for i_matches in range(1, 2):
+            # xpath de cada partido dentro de la etiqueta div que contiene los 10 partidos (como máximo)
+            xpath_match_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[1]/div/d'\
+                            f'iv[2]/div[{i_matches}]'
+                        
+            element_match_x = click_on(driver, xpath_match_x)
+
+            print(f'element_match_{i_matches}.text:', element_match_x.text)
+
+            # xpath del botón "STATISTICS"
+            xpath_statistics_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2]/'\
+                                 'div/div[1]/div/div/div[3]/div[1]/div/div/div/h2[3]/a'
+            
+            # Buscar (por medio de la función "click_on()") y acceder al componente con las estadísticas del parido "x"
+            element_statistics_x = click_on(driver, xpath_statistics_x)
+
+            # Obtener las estadísticas del paritdo "x"
+            get_statistics_match(driver)
 
  
     #     # Buscar el XPAHT de cada uno de los 30 equipos
