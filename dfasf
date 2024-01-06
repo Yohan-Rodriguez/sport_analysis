@@ -1,0 +1,89 @@
+[33mcommit 5a2eb2e996b8634f8b3e481ceef275a0443eb897[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: Yohan-Rodriguez <ymrodriguezg@upn.edu.co>
+Date:   Fri Jan 5 00:27:01 2024 -0500
+
+    Ya selecciona los partidos y staísticas. Se debe realziar la función scrollbar y organizar la información obtenida por medio del .text
+
+[33mcommit fa1103f325a0f5b11c8687ce4652276b67c3508f[m
+Author: Yohan-Rodriguez <ymrodriguezg@upn.edu.co>
+Date:   Thu Jan 4 00:52:03 2024 -0500
+
+    Resestructuración: Ya funciona la selección de temrporadas
+
+[33mcommit 91a554b342a40c425911d340a5ea4726eeb0b583[m
+Author: Yohan-Rodriguez <ymrodriguezg@upn.edu.co>
+Date:   Tue Sep 12 08:34:10 2023 -0500
+
+    Actualización de archivos por posible daño del sistema operativo
+
+[33mcommit 56362784979d5c1b7032d69f632a99849474eb12[m
+Author: Yohan-Rodriguez <ymrodriguezg@upn.edu.co>
+Date:   Mon Aug 7 12:16:35 2023 -0500
+
+    Código para ejecutar en el servidor local sin usar MySql
+
+[33mcommit acce052c96579710ec4351bbf60a7bf25a5779eb[m
+Author: Yohan-Rodriguez <ymrodriguezg@upn.edu.co>
+Date:   Mon Aug 7 03:23:43 2023 -0500
+
+    requirements.txt
+
+[33mcommit 737e340d0ae21f224119bf43f05da2f9b0380c87[m
+Author: Yohan-Rodriguez <ymrodriguezg@upn.edu.co>
+Date:   Mon Aug 7 03:15:33 2023 -0500
+
+    requirements.txt
+
+[33mcommit 3a5a7a59c734886977aaa50d72a931404d1dbc3f[m
+Author: Yohan-Rodriguez <ymrodriguezg@upn.edu.co>
+Date:   Sun Aug 6 11:58:22 2023 -0500
+
+    Código listo para iniciar con 140 ligas. Solo falta agregar el conteo de segundos por season no mayor a 12 minutos (720 segundos)
+
+[33mcommit 0a56892dcfc3bd7c5d60b1802421d636d0cef7ec[m
+Author: Yohan-Rodriguez <ymrodriguezg@upn.edu.co>
+Date:   Sat Aug 5 01:30:10 2023 -0500
+
+    Terminando de depurar errores de Xpath y comenzadno con el diseño de .csv de cada liga
+
+[33mcommit f49b377e14c9f92b92e6643a78fb68577420e3bc[m
+Author: Yohan-Rodriguez <ymrodriguezg@upn.edu.co>
+Date:   Fri Aug 4 01:46:25 2023 -0500
+
+    Revisar .txt errores. Seguir con la lógica del excel o dataframe
+
+[33mcommit fa23bec65ab1f91ec659afb0acf331fbc3ab376c[m
+Author: Yohan-Rodriguez <ymrodriguezg@upn.edu.co>
+Date:   Wed Aug 2 01:58:04 2023 -0500
+
+    Toggl esolucionado. Falta pruebas de validación de WS y diseño del modelo DB.TEAMS
+
+[33mcommit 709478df020d5c3a7f5c8c066204578a29ae80fb[m
+Author: Yohan-Rodriguez <ymrodriguezg@upn.edu.co>
+Date:   Tue Aug 1 01:53:25 2023 -0500
+
+    Revisar todos los CSS_SELECTORS
+
+[33mcommit a637e86bbf86843568a65cd18685ff4d31819660[m
+Author: Yohan-Rodriguez <ymrodriguezg@upn.edu.co>
+Date:   Mon Jul 31 01:56:25 2023 -0500
+
+    Obtener primer los links, luego seleccionar los links a trabajar y seguir con las depuración de errore senn el ws
+
+[33mcommit ac9658ce9aefa03966c4af1ac126fb0bee5b9757[m
+Author: Yohan-Rodriguez <ymrodriguezg@upn.edu.co>
+Date:   Sun Jul 30 17:08:19 2023 -0500
+
+    Funciona el bloque de lectura del DIV_10_MATCHES - Seguir conel botón PREVIOUS
+
+[33mcommit 4f8b59f51acb537fb9ef7d422478ddd29f2d8565[m
+Author: Yohan-Rodriguez <85138862+Yohan-Rodriguez@users.noreply.github.com>
+Date:   Sun Jul 30 02:35:00 2023 -0500
+
+    Create README.md
+
+[33mcommit 978824f27919c1d1d2274c7f627c367af8a3af27[m
+Author: Yohan-Rodriguez <ymrodriguezg@upn.edu.co>
+Date:   Sun Jul 30 02:31:37 2023 -0500
+
+    Paos a seguir: Lógica de scrapin para los partidos

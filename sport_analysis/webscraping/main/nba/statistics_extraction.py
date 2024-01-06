@@ -1,14 +1,17 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver import ActionChains
+import time
 
-
-def get_statistics_match(driver):
+def get_statistics_match(driver, quarter_x):
     """
     Obtener las estadisticas de cada partido en las pestaña "STATISTICS" dentro de la página web.
+    Realizar Scroll dentro del div que contiene dichas estadísticas.
 
     Args:
         driver: WebDriver
+        quarter_x: Referencia al cuarto específico sobre el que se está obteniendo las estadísiticas
 
     Returns:
         Función sin return.
@@ -43,26 +46,38 @@ def get_statistics_match(driver):
               
     """
 
-    move_px_y = 160
+    # Xpath de la barra deslizante vertical donde están contenidas las estadísticas del partido
+    xpath_scroll_bar = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2]/div/div[3]'
+
     for i_dev_stat in range(1, 4):
+        
+        # Número de pixeles a mover inicialmente en el scroll_bar
+        move_px_scroll_bar = 100 if(i_dev_stat==1) else 110
+
+        # XPATH del div que contiene llas estadísticas del aprtido (son 3 div's)
         xpath_stat_dev_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2]/div/div[1]'\
                         f'/div/div/div[3]/div[2]/div/div/div[2]/div/div[{i_dev_stat}]'
         
-        elem_stat_dev_x = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, xpath_stat_dev_x)))
-        
         try:
+            # Elemento encontrado
+            elem_stat_dev_x = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, xpath_stat_dev_x)))
+            
+            # Mostrar las estadísticas del partido
             print(f'elem_stat_dev_{i_dev_stat}', elem_stat_dev_x.text)
-            # Obtiene el valor actual del atributo style
-            # current_style = elem_stat_dev_x.get_attribute("style")
-            print(elem_stat_dev_x.get_attribute("style"))
+        except:
+            print(f'Activated EXCEPTIONE: No se ha encontrado el elemento "elem_stat_dev_{i_dev_stat}" de las estadisticas')
+        
+        # El scroll se realiza solo en las 2 primeras iteraciones
+        if i_dev_stat in [1, 2]:
+            try:
+                scroll_bar = driver.find_element(By.XPATH, xpath_scroll_bar)
 
-            # # Modificar el valor del atributo style
-            # new_style = current_style.replace("top: 0px", f"top: {move_px_y}px")
+                # Permite hacer 'scroll' en la ventana que contiene la información completa del partido seleccionado.
+                action = ActionChains(driver)
 
-            # # Establece el nuevo valor del atributo style
-            # elem_stat_dev_x.set_attribute("style", new_style)
+                # Se mueve "move_px_scroll_bar"px hacia abajo.
+                action.move_to_element_with_offset(scroll_bar, 0, move_px_scroll_bar).click().perform()
 
-            # move_px_y += 40
-        except Exception as e:
-            print(f'{e}, Etiqueta "div_{i_dev_stat}" de las estadísticas no encontrado...')
-    
+            except Exception as e:
+                print('Activated EXCEPTIONE: On Scroll statistics', e, end='\n')
+                continue

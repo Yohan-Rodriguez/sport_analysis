@@ -98,13 +98,40 @@ def inicializar_driver():
     return driver
 
 
-def click_on(driver, xpath_element):
+def click_on(driver, xpath_element, time_wait, click_js=False):
+    """
+    Clic Sobre el elemnto a buscar del XPATH del parámetro obtenido
 
-    # Buscar el elemento asociado al parido "x" dentro del div 10
-    element = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, xpath_element)))
-    # Clic sobre el elemtno encontrado
-    # driver.execute_script("arguments[0].click();", element)
-    element.click()
+    Args:
+        driver: WebDriver
+        xpath_element: XPATH del elemtno a buscar dentro de la página web.
+        time_wait = Tiempo de espera ára ser usado en la función "WebDriverWait()"
+        click_js = Booleano que indica si usar el script de javascript o no para hacer clic
+
+    Returns:
+        Web Element encontrado
+
+    Raises:
+        print informativo sobre la activación de la exception
+
+    Examples:
+        >>> click_on(driver, xpath_element):
+        
+        >>> click_on(driver, xpath_element):        
+    """
+    try:
+        # Buscar el elemento
+        element = WebDriverWait(driver, time_wait).until(EC.presence_of_element_located((By.XPATH, xpath_element)))
+        
+        # Clic sobre el elemtno encontrado
+
+        if click_js:
+            driver.execute_script("arguments[0].click();", element)
+        else:
+            element.click()
+
+    except Exception:
+        print('Activated EXCEPTIONE: Elemento no encontrado o sin respuesta al "CLICK_ON"')
 
     return element
 
@@ -127,24 +154,42 @@ def get_and_set_data_nba():
         # ============================================================================================================ #
 
         # Acceder a cada partido de la termporada de la NBA seleccionada:
-        for i_matches in range(1, 2):
+        for i_matches in range(1, 11):
             # xpath de cada partido dentro de la etiqueta div que contiene los 10 partidos (como máximo)
             xpath_match_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[1]/div/d'\
                             f'iv[2]/div[{i_matches}]'
                         
-            element_match_x = click_on(driver, xpath_match_x)
+            # Clic sobre cada partido
+            element_match_x = click_on(driver, xpath_match_x, 5)
 
-            print(f'element_match_{i_matches}.text:', element_match_x.text)
+            try:
+                # Información del partido como: nombres de los equipos, fecha y marcadores.
+                print(f'element_match_{i_matches}.text:', element_match_x.text)
+
+            except:
+                print('Activated EXCEPTIONE: No se puede acceder al método .text del elemento del partido X')
 
             # xpath del botón "STATISTICS"
             xpath_statistics_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2]/'\
                                  'div/div[1]/div/div/div[3]/div[1]/div/div/div/h2[3]/a'
             
-            # Buscar (por medio de la función "click_on()") y acceder al componente con las estadísticas del parido "x"
-            element_statistics_x = click_on(driver, xpath_statistics_x)
+            # Dar clic sobre el componente que contiene las estadísticas del partido "x"
+            element_statistics_x = click_on(driver, xpath_statistics_x, 10)
 
-            # Obtener las estadísticas del paritdo "x"
-            get_statistics_match(driver)
+            # For para acceder a las estadísticas individuales de cada cuarto 
+            for i_quarters in range(2, 6):
+                # xpath de cada cuarto
+                xpath_quarter_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2]'\
+                                 f'/div/div[1]/div/div/div[3]/div[2]/div/div/div[1]/div[{i_quarters}]'
+                
+                 # Clic sobre cada quarto (Q1, Q2, Q3 y Q4)
+                element_quarter_x = click_on(driver, xpath_quarter_x, 10, click_js=True)
+
+                # Núemro del cuarto (Q_1 o Q_2 o Q_3 o Q_4)
+                quarter_x = i_quarters-1
+                
+                # Obtener las estadísticas del paritdo "x"
+                get_statistics_match(driver, quarter_x)
 
  
     #     # Buscar el XPAHT de cada uno de los 30 equipos
