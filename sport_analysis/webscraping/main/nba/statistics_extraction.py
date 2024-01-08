@@ -2,7 +2,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver import ActionChains
-import time
+
 
 def get_statistics_match(driver, quarter_x):
     """
@@ -46,38 +46,48 @@ def get_statistics_match(driver, quarter_x):
               
     """
 
-    # Xpath de la barra deslizante vertical donde están contenidas las estadísticas del partido
-    xpath_scroll_bar = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2]/div/div[3]'
+    # Xpath de contenedor de la barra deslizante vertical donde están contenidas las estadísticas del partido
+    xpath_container_scroll_bar = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2]/div/div[3]'
+    # Elemento del contenedor de la barra vertical
+    container_scroll_bar = driver.find_element(By.XPATH, xpath_container_scroll_bar)
 
-    for i_dev_stat in range(1, 4):
-        
-        # Número de pixeles a mover inicialmente en el scroll_bar
-        move_px_scroll_bar = 100 if(i_dev_stat==1) else 110
-
-        # XPATH del div que contiene llas estadísticas del aprtido (son 3 div's)
-        xpath_stat_dev_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2]/div/div[1]'\
-                        f'/div/div/div[3]/div[2]/div/div/div[2]/div/div[{i_dev_stat}]'
+    # for para ingresar a cad uno de los 3 divs que contieenn las estadísitcas de cada cuarto
+    for i_dev_stat in range(1, 4):        
         
         try:
-            # Elemento encontrado
+            # XPATH del div que contiene las estadísticas del partido (son 3 div's diferentes)
+            xpath_stat_dev_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2]/div/div[1]'\
+                            f'/div/div/div[3]/div[2]/div/div/div[2]/div/div[{i_dev_stat}]'
+            
+            # Elemento de las estadísticas del partido encontrado
             elem_stat_dev_x = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, xpath_stat_dev_x)))
             
             # Mostrar las estadísticas del partido
-            print(f'elem_stat_dev_{i_dev_stat}', elem_stat_dev_x.text)
+            # print(f'\nelem_stat_dev_{i_dev_stat}', elem_stat_dev_x.text)
+            print('')
+
+
+
+
         except:
             print(f'Activated EXCEPTIONE: No se ha encontrado el elemento "elem_stat_dev_{i_dev_stat}" de las estadisticas')
         
-        # El scroll se realiza solo en las 2 primeras iteraciones
-        if i_dev_stat in [1, 2]:
-            try:
-                scroll_bar = driver.find_element(By.XPATH, xpath_scroll_bar)
-
-                # Permite hacer 'scroll' en la ventana que contiene la información completa del partido seleccionado.
+        # El desplazamiento de scroll se realiza solo en la primera iteración
+        # déspues de obtener las estadísticas del primer <div> de los 3 div's que contiene estadísticas 
+        try:
+            if i_dev_stat == 1:
+                # Onjeto que permite hacer 'scroll' en las estadísticas completas del partido seleccionado
                 action = ActionChains(driver)
 
-                # Se mueve "move_px_scroll_bar"px hacia abajo.
-                action.move_to_element_with_offset(scroll_bar, 0, move_px_scroll_bar).click().perform()
+                # Se mueve "move_px_scroll_bar" px hacia abajo.
+                action.move_to_element_with_offset(container_scroll_bar, 0, 110).click().perform()
 
-            except Exception as e:
-                print('Activated EXCEPTIONE: On Scroll statistics', e, end='\n')
-                continue
+            elif i_dev_stat == 3:
+                # Vuelve a la posición inicial de la barra de desplazamiento
+                action.move_to_element_with_offset(container_scroll_bar, 0, 0).click().perform()
+
+        except Exception as e:
+            print('Activated EXCEPTIONE: On Scroll statistics', e, end='\n')
+            continue
+
+    

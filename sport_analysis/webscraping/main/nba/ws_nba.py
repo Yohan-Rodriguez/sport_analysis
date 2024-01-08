@@ -1,11 +1,12 @@
+import datetime
 import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from .seasons_nba import choose_options_menu
-from .dictionaries_db import set_name_dict_team, set_info_players_in_dict_team, get_dict_teams
+from .aux_functions import choose_options_menu, click_on, click_on_previous
 from .statistics_extraction import get_statistics_match
+from .dictionaries_db import set_name_dict_team, set_info_players_in_dict_team, get_dict_teams
 
 
 
@@ -98,124 +99,184 @@ def inicializar_driver():
     return driver
 
 
-def click_on(driver, xpath_element, time_wait, click_js=False):
-    """
-    Clic Sobre el elemnto a buscar del XPATH del parámetro obtenido
 
-    Args:
-        driver: WebDriver
-        xpath_element: XPATH del elemtno a buscar dentro de la página web.
-        time_wait = Tiempo de espera ára ser usado en la función "WebDriverWait()"
-        click_js = Booleano que indica si usar el script de javascript o no para hacer clic
+def open_and_scraping_web(driver, count_click_on_previous_tx=0):  
 
-    Returns:
-        Web Element encontrado
+    # ============================================================================================================ #
+    # ACCESS SEASON'S MATCHES                                                                                      #
+    # ============================================================================================================ #
+    # Bandera para recargar la página cada 23 minutos
+    time_now = datetime.datetime.now()
+    time_end = datetime.datetime.now()
+    diff_time = (time_end - time_now).seconds
 
-    Raises:
-        print informativo sobre la activación de la exception
+    count_click_on_previous = 0
 
-    Examples:
-        >>> click_on(driver, xpath_element):
+    # ============================================================================================================ #
+    # BUTTON PREVIOUS INITIAL                                                                                      #
+    # ============================================================================================================ #
+    if count_click_on_previous_tx > 0:
+        # Número de clics sobre "PREVIOUS" dados hasta el momento durante la ejecución del código
+        count_click_on_previous += (count_click_on_previous_tx + 1)
+
+        click_on_previous(driver=driver, iterations=count_click_on_previous)
+    # END --------- BUTTON PREVIOUS INITIAL                                                                        #
+    # ============================================================================================================ # 
+    
+    # Bandera que cambia cuando ya no está disponible el botón "PREVIOUS" 
+    flag_no_change_season = False
+
+    while (not flag_no_change_season) or (diff_time < 90):
         
-        >>> click_on(driver, xpath_element):        
-    """
-    try:
-        # Buscar el elemento
-        element = WebDriverWait(driver, time_wait).until(EC.presence_of_element_located((By.XPATH, xpath_element)))
+        # div principal que contiene como máximo 10 partidos
+        xpath_div_main_10_matches = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[1]/div/div[2]'
+        div_main_10_matches = driver.find_element(By.XPATH, xpath_div_main_10_matches)
+
+        # Encontrar todos los elementos div secundarios dentro del div principal
+        divs_secundarios = div_main_10_matches.find_elements(By.TAG_NAME, "div")
+
+        # Obtener el número total de divs secundarios
+        nume_divs_scundarios = len(divs_secundarios)
+
+        # Acceder a cada uno de los X partidos cargados en el div principal que contien los partidos
+        for i_matches in range(1, nume_divs_scundarios+1):
+
+            # xpath de cada partido dentro de la etiqueta <div> que contiene los 10 partidos (como máximo)
+            xpath_match_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[1]/div/d'\
+                            f'iv[2]/div[{i_matches}]'
+            
+            try:
+                # Clic sobre cada partido
+                # element_match_x = click_on(driver, xpath_match_x, 5)
+                if i_matches != 1:
+                    element_match_x = click_on(driver, xpath_match_x, 5, click_js=True)
+                else:
+                    element_match_x = click_on(driver, xpath_match_x, 5)
+            
+            except:
+                print('Activated EXCEPTIONE: match no found...')
+                # Salir del for que controla el acceso a los partiodos
+                break
+
+            try:
+                # Información del partido como: nombres de los equipos, fecha y marcadores.
+                # print(f'element_match_{i_matches}.text:', element_match_x.text)
+                print(i_matches)
+
+
+
+
+            except:
+                print('Activated EXCEPTIONE: No se puede acceder al método ".text" del elemento del partido "X"')
+
+            # ======================================================================================================== #
+            # ACCESS TO STATISTICS                                                                                     #
+            # ======================================================================================================== #
+            # xpath del botón "STATISTICS"
+            # y dar clic sobre el componente que contiene las estadísticas del partido "x"
+            xpath_statistics_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2]/'\
+                                'div/div[1]/div/div/div[3]/div[1]/div/div/div/h2[3]/a'            
+            element_statistics_x = click_on(driver, xpath_statistics_x, 10)
+
+            # For para acceder a las estadísticas individuales de cada cuarto (Q1, Q2, Q3 y Q4)
+            for i_quarters in range(2, 6):
+                # xpath de cada cuarto
+                xpath_quarter_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2]'\
+                                f'/div/div[1]/div/div/div[3]/div[2]/div/div/div[1]/div[{i_quarters}]'
+                
+                # Clic sobre cada quarto
+                element_quarter_x = click_on(driver, xpath_quarter_x, 10, click_js=True)
+
+                # Núemro del cuarto actual (Q1 o Q2 o Q3 o Q4)
+                quarter_x = i_quarters-1
+                
+                # Obtener las estadísticas del paritdo "x"
+                get_statistics_match(driver, quarter_x)
+            # END --------- ACCESS TO STATISTICS                                                                       #
+            # ======================================================================================================== #
         
-        # Clic sobre el elemtno encontrado
+        try:
+            click_on_previous(driver)
+            count_click_on_previous += 1
 
-        if click_js:
-            driver.execute_script("arguments[0].click();", element)
-        else:
-            element.click()
+            time_end = datetime.datetime.now()
 
-    except Exception:
-        print('Activated EXCEPTIONE: Elemento no encontrado o sin respuesta al "CLICK_ON"')
+        except:
+            print('Activated EXCEPTIONE: button "PREVIOUS" no found. END SEASON...!')
+            flag_no_change_season = True
 
-    return element
+        diff_time = (time_end - time_now).seconds
+        print(f'\nTiempo transcurrido: {diff_time} segundos')
+    
+    # END --------- ACCESS SEASON'S MATCHES                                                                        #
+    # ============================================================================================================ #
+            
+    return flag_no_change_season, count_click_on_previous
 
+
+
+dict_sesons = {0: '', 1: '23/24', 2: '22/23', 3: '21/22', 4: '20/21', 5: '19/20', 6: '18/19', 7: '17/18', 
+                      8: '16/17', 9: '15/16',}
+# Número de seasons a sensar
+# max_season = len(dict_sesons.values())
+max_season = 3
 
 def get_and_set_data_nba():
+
     # Inicializar el driver
     driver = inicializar_driver()
 
     # Abrir navegador
     driver.maximize_window()
     driver.get('https://www.sofascore.com/tournament/basketball/usa/nba/132')
-
-    # For de selección de season
-    for i_teams in range(2, 3, 1):
-        # ============================================================================================================ #
-        # CHOOSE NBA LEAGUE                                                                                            #
-        # ============================================================================================================ #
-        choose_options_menu(driver=driver, choose_option=i_teams)
-        # END --------- CHOOSE NBA LEAGUE                                                                              #
-        # ============================================================================================================ #
-
-        # Acceder a cada partido de la termporada de la NBA seleccionada:
-        for i_matches in range(1, 11):
-            # xpath de cada partido dentro de la etiqueta div que contiene los 10 partidos (como máximo)
-            xpath_match_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[1]/div/d'\
-                            f'iv[2]/div[{i_matches}]'
-                        
-            # Clic sobre cada partido
-            element_match_x = click_on(driver, xpath_match_x, 5)
-
-            try:
-                # Información del partido como: nombres de los equipos, fecha y marcadores.
-                print(f'element_match_{i_matches}.text:', element_match_x.text)
-
-            except:
-                print('Activated EXCEPTIONE: No se puede acceder al método .text del elemento del partido X')
-
-            # xpath del botón "STATISTICS"
-            xpath_statistics_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2]/'\
-                                 'div/div[1]/div/div/div[3]/div[1]/div/div/div/h2[3]/a'
-            
-            # Dar clic sobre el componente que contiene las estadísticas del partido "x"
-            element_statistics_x = click_on(driver, xpath_statistics_x, 10)
-
-            # For para acceder a las estadísticas individuales de cada cuarto 
-            for i_quarters in range(2, 6):
-                # xpath de cada cuarto
-                xpath_quarter_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2]'\
-                                 f'/div/div[1]/div/div/div[3]/div[2]/div/div/div[1]/div[{i_quarters}]'
-                
-                 # Clic sobre cada quarto (Q1, Q2, Q3 y Q4)
-                element_quarter_x = click_on(driver, xpath_quarter_x, 10, click_js=True)
-
-                # Núemro del cuarto (Q_1 o Q_2 o Q_3 o Q_4)
-                quarter_x = i_quarters-1
-                
-                # Obtener las estadísticas del paritdo "x"
-                get_statistics_match(driver, quarter_x)
-
- 
-    #     # Buscar el XPAHT de cada uno de los 30 equipos
-    #     div_team = driver.find_element(By.XPATH, '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[2]/div[2]/div[3]'\
-    #                                          f'/div/a[{i_teams}]/div/div[3]/div/span')
-
-    #     name_team = div_team.text
-    #     #name_team = ''
-    #     set_name_dict_team(name_team)
-
-    #     driver.execute_script("arguments[0].click();", div_team)
-
-    #     storage_players(driver, name_team)
-
-    #     # xpath_back = '//*[@id="__next"]/main/div[2]/div/div[2]/div[1]/div[2]/div[3]/div[3]/div[3]/div[2]/a[1]/div'
-    #     # div_back = driver.find_element(By.XPATH, xpath_back)
-    #     # driver.execute_script("arguments[0].click();", div_back)
-                
-    #     print('\nREGRESAR...!')
-
-    #     driver.get('https://www.sofascore.com/tournament/basketball/usa/nba/132')
-
-    #     print('\nSe regresó a la página incial...!')
-
-        time.sleep(3)
     
+    # Season que esta siendo sensada actualmente
+    season_currently = 1
+
+    # Contador del número de la season actual
+    count_season = 0
+
+    # contador de clics sobre "PREVIOUS" dados durante la ejecución del código
+    count_click_on_previous_tx = 0
+
+    # Bandera que cambia cuando ya no está disponible el botón "PREVIOUS" 
+    flag_no_change_season_rx = True
+
+    while count_season < max_season:
+
+        # Si se agotó el tiempo. Recargar la página web
+        if not flag_no_change_season_rx:
+            print('\nRecargando la página web...')
+            # Recarga página web
+            driver.refresh()
+
+        # si se acabaron los partidos de la season actual. Cambiar de season
+        if flag_no_change_season_rx:
+            # ============================================================================================================ #
+            # CHOOSE NBA LEAGUE                                                                                            #
+            # ============================================================================================================ #
+            print('\nCambiando de temporada de la NBA...')
+            season_currently += 1
+
+            choose_options_menu(driver=driver, choose_option=season_currently)
+            
+            # Fecha de la season. Ejemplo: para "i_teams = 5" → season = '19/20'
+            season = dict_sesons[season_currently]
+
+            # Asignar nueva season
+            count_season += 1
+
+            # Resetear el valor de "count_click_on_previous_tx"
+            count_click_on_previous_tx -= count_click_on_previous_tx
+            # END --------- CHOOSE NBA LEAGUE                                                                              #
+            # ============================================================================================================ #
+            
+        # "flag_no_change_season_rx = True" Significa que se acabaron los partidos de la season actual
+        # "flag_no_change_season_rx = False" Significa que se agotó el tiempo. Recargar la página
+        flag_no_change_season_rx, count_click_on_previous_rx = open_and_scraping_web(driver, count_click_on_previous_tx)
+
+        count_click_on_previous_tx = count_click_on_previous_rx
+
     # Cerrar navegador
     driver.quit()
 
