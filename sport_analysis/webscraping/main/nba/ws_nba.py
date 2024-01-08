@@ -99,38 +99,37 @@ def inicializar_driver():
     return driver
 
 
+# ==================================================================================================================== #
+# SCRAPING WEB                                                                                                         #
+# ==================================================================================================================== #
+def open_and_scraping_web(driver, count_click_on_previous_tx):  
 
-def open_and_scraping_web(driver, count_click_on_previous_tx=0):  
-
-    # ============================================================================================================ #
-    # ACCESS SEASON'S MATCHES                                                                                      #
-    # ============================================================================================================ #
     # Bandera para recargar la página cada 23 minutos
     time_now = datetime.datetime.now()
     time_end = datetime.datetime.now()
     diff_time = (time_end - time_now).seconds
 
-    count_click_on_previous = 0
+    count_click_on_previous = count_click_on_previous_tx
 
     # ============================================================================================================ #
     # BUTTON PREVIOUS INITIAL                                                                                      #
     # ============================================================================================================ #
-    if count_click_on_previous_tx > 0:
+    if count_click_on_previous > 0:
         # Número de clics sobre "PREVIOUS" dados hasta el momento durante la ejecución del código
-        count_click_on_previous += (count_click_on_previous_tx + 1)
-
-        click_on_previous(driver=driver, iterations=count_click_on_previous)
+        click_on_previous(driver=driver, iterations=(count_click_on_previous))
     # END --------- BUTTON PREVIOUS INITIAL                                                                        #
     # ============================================================================================================ # 
     
+    # ============================================================================================================ #
+    # ACCES TO MATCHES AND PREVIOUS BUTTON                                                                                      #
+    # ============================================================================================================ #    
     # Bandera que cambia cuando ya no está disponible el botón "PREVIOUS" 
     flag_no_change_season = False
-
-    while (not flag_no_change_season) or (diff_time < 90):
+    while (not flag_no_change_season) and (diff_time < 90):
         
         # div principal que contiene como máximo 10 partidos
         xpath_div_main_10_matches = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[1]/div/div[2]'
-        div_main_10_matches = driver.find_element(By.XPATH, xpath_div_main_10_matches)
+        div_main_10_matches = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.XPATH, xpath_div_main_10_matches)))
 
         # Encontrar todos los elementos div secundarios dentro del div principal
         divs_secundarios = div_main_10_matches.find_elements(By.TAG_NAME, "div")
@@ -138,30 +137,32 @@ def open_and_scraping_web(driver, count_click_on_previous_tx=0):
         # Obtener el número total de divs secundarios
         nume_divs_scundarios = len(divs_secundarios)
 
+        # ============================================================================================================ #
+        # ACCESS SEASON'S MATCHES X 10                                                                                     #
+        # ============================================================================================================ #
         # Acceder a cada uno de los X partidos cargados en el div principal que contien los partidos
-        for i_matches in range(1, nume_divs_scundarios+1):
+        for i_matches in range(1, (nume_divs_scundarios+1)):
 
             # xpath de cada partido dentro de la etiqueta <div> que contiene los 10 partidos (como máximo)
-            xpath_match_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[1]/div/d'\
-                            f'iv[2]/div[{i_matches}]'
+            xpath_match_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[1]/div/div'\
+                            f'[2]/div[{i_matches}]/a'
             
             try:
                 # Clic sobre cada partido
-                # element_match_x = click_on(driver, xpath_match_x, 5)
-                if i_matches != 1:
-                    element_match_x = click_on(driver, xpath_match_x, 5, click_js=True)
-                else:
+                if i_matches ==1:
                     element_match_x = click_on(driver, xpath_match_x, 5)
+                else:
+                    element_match_x = click_on(driver, xpath_match_x, 5, True)
             
             except:
-                print('Activated EXCEPTIONE: match no found...')
+                print('\nActivated EXCEPTIONE: match no found...')
                 # Salir del for que controla el acceso a los partiodos
                 break
 
             try:
                 # Información del partido como: nombres de los equipos, fecha y marcadores.
                 # print(f'element_match_{i_matches}.text:', element_match_x.text)
-                print(i_matches)
+                print('\n# Cliks:', count_click_on_previous, '- # del match:', i_matches)
 
 
 
@@ -174,9 +175,15 @@ def open_and_scraping_web(driver, count_click_on_previous_tx=0):
             # ======================================================================================================== #
             # xpath del botón "STATISTICS"
             # y dar clic sobre el componente que contiene las estadísticas del partido "x"
-            xpath_statistics_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2]/'\
-                                'div/div[1]/div/div/div[3]/div[1]/div/div/div/h2[3]/a'            
-            element_statistics_x = click_on(driver, xpath_statistics_x, 10)
+            for i_statisctics in range(10):
+                xpath_statistics_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2]/'\
+                                    'div/div[1]/div/div/div[3]/div[1]/div/div/div/h2[3]/a' 
+                        
+                element_statistics_x = click_on(driver, xpath_statistics_x, 10, click_js=True)
+
+                if element_statistics_x.text == 'Statistics':
+                    break
+
 
             # For para acceder a las estadísticas individuales de cada cuarto (Q1, Q2, Q3 y Q4)
             for i_quarters in range(2, 6):
@@ -191,35 +198,47 @@ def open_and_scraping_web(driver, count_click_on_previous_tx=0):
                 quarter_x = i_quarters-1
                 
                 # Obtener las estadísticas del paritdo "x"
-                get_statistics_match(driver, quarter_x)
+                print('# Cliks:', count_click_on_previous, '- # del match:', i_matches, '- Quarto:', quarter_x)
+                get_statistics_match(driver)
             # END --------- ACCESS TO STATISTICS                                                                       #
             # ======================================================================================================== #
         
+        # END --------- ACCESS SEASON'S MATCHES X 10                                                                       #
+        # ============================================================================================================ #
+
         try:
             click_on_previous(driver)
+            
             count_click_on_previous += 1
 
             time_end = datetime.datetime.now()
 
         except:
-            print('Activated EXCEPTIONE: button "PREVIOUS" no found. END SEASON...!')
+            print('\nActivated EXCEPTIONE: button "PREVIOUS" no found. END SEASON...!')
             flag_no_change_season = True
+            break
 
         diff_time = (time_end - time_now).seconds
-        print(f'\nTiempo transcurrido: {diff_time} segundos')
-    
-    # END --------- ACCESS SEASON'S MATCHES                                                                        #
-    # ============================================================================================================ #
+        print(f'\nTiempo transcurrido: {diff_time} segundos')    
+
+    # END --------- ACCES TO MATCHES AND PREVIOUS BUTTON                                                                  #
+    # ============================================================================================================ # 
             
     return flag_no_change_season, count_click_on_previous
+# END --------- SCRAPING WEB                                                                                           #
+# ==================================================================================================================== #
 
 
-
+# ==================================================================================================================== #
+# MAIN                                                                                                                 #
+# ==================================================================================================================== #
+# Season a obtener data
 dict_sesons = {0: '', 1: '23/24', 2: '22/23', 3: '21/22', 4: '20/21', 5: '19/20', 6: '18/19', 7: '17/18', 
                       8: '16/17', 9: '15/16',}
+
 # Número de seasons a sensar
 # max_season = len(dict_sesons.values())
-max_season = 3
+max_season = 5
 
 def get_and_set_data_nba():
 
@@ -228,13 +247,10 @@ def get_and_set_data_nba():
 
     # Abrir navegador
     driver.maximize_window()
-    driver.get('https://www.sofascore.com/tournament/basketball/usa/nba/132')
-    
-    # Season que esta siendo sensada actualmente
-    season_currently = 1
+    driver.get('https://www.sofascore.com/tournament/basketball/usa/nba/132')   
 
     # Contador del número de la season actual
-    count_season = 0
+    count_season = 2
 
     # contador de clics sobre "PREVIOUS" dados durante la ejecución del código
     count_click_on_previous_tx = 0
@@ -242,9 +258,13 @@ def get_and_set_data_nba():
     # Bandera que cambia cuando ya no está disponible el botón "PREVIOUS" 
     flag_no_change_season_rx = True
 
+    # ============================================================================================================ #
+    # ACCESS TO EACH SEASON                                                                                        #
+    # ============================================================================================================ #    
+    # Mientras hallan seasons a sensar (count_season < 10)
     while count_season < max_season:
 
-        # Si se agotó el tiempo. Recargar la página web
+        # Si se agotó el tiempo, recargar la página web
         if not flag_no_change_season_rx:
             print('\nRecargando la página web...')
             # Recarga página web
@@ -256,12 +276,11 @@ def get_and_set_data_nba():
             # CHOOSE NBA LEAGUE                                                                                            #
             # ============================================================================================================ #
             print('\nCambiando de temporada de la NBA...')
-            season_currently += 1
 
-            choose_options_menu(driver=driver, choose_option=season_currently)
+            choose_options_menu(driver=driver, choose_option=count_season)
             
             # Fecha de la season. Ejemplo: para "i_teams = 5" → season = '19/20'
-            season = dict_sesons[season_currently]
+            date_season_str = dict_sesons[count_season]
 
             # Asignar nueva season
             count_season += 1
@@ -276,8 +295,12 @@ def get_and_set_data_nba():
         flag_no_change_season_rx, count_click_on_previous_rx = open_and_scraping_web(driver, count_click_on_previous_tx)
 
         count_click_on_previous_tx = count_click_on_previous_rx
-
+    # END --------- ACCESS TO EACH SEASON                                                                          #
+    # ============================================================================================================ # 
+            
     # Cerrar navegador
     driver.quit()
 
     print('\nFIN...\n')
+# END --------- MAIN                                                                                                   #
+# ==================================================================================================================== #

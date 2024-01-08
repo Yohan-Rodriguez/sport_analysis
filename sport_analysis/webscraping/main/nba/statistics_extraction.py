@@ -4,7 +4,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver import ActionChains
 
 
-def get_statistics_match(driver, quarter_x):
+def get_statistics_match(driver):
     """
     Obtener las estadisticas de cada partido en las pestaña "STATISTICS" dentro de la página web.
     Realizar Scroll dentro del div que contiene dichas estadísticas.
@@ -12,6 +12,8 @@ def get_statistics_match(driver, quarter_x):
     Args:
         driver: WebDriver
         quarter_x: Referencia al cuarto específico sobre el que se está obteniendo las estadísiticas
+        count_click_on_previous:
+        i_matches:
 
     Returns:
         Función sin return.
@@ -64,7 +66,7 @@ def get_statistics_match(driver, quarter_x):
             
             # Mostrar las estadísticas del partido
             # print(f'\nelem_stat_dev_{i_dev_stat}', elem_stat_dev_x.text)
-            print('')
+            print('...')
 
 
 
@@ -85,6 +87,10 @@ def get_statistics_match(driver, quarter_x):
             elif i_dev_stat == 3:
                 # Vuelve a la posición inicial de la barra de desplazamiento
                 action.move_to_element_with_offset(container_scroll_bar, 0, 0).click().perform()
+                
+                # Vuelve a la posición inicial de la barra de desplazamiento utilizando JavaScript
+                # driver.execute_script("arguments[0].scrollTop = 0;", container_scroll_bar)
+
 
         except Exception as e:
             print('Activated EXCEPTIONE: On Scroll statistics', e, end='\n')

@@ -88,7 +88,6 @@ def click_on(driver, xpath_element, time_wait, click_js=False):
     element = WebDriverWait(driver, time_wait).until(EC.presence_of_element_located((By.XPATH, xpath_element)))
     
     # Clic sobre el elemtno encontrado
-
     if click_js:
         driver.execute_script("arguments[0].click();", element)
     else:
@@ -106,4 +105,4 @@ def click_on_previous(driver, iterations=1):
     # Número de veces seguidas que se dará clic sobre el botón "PREVIOUS"
     for i_iterations in range(iterations):
         # Clic sobre el botón
-        click_on(driver, xpath__button_previous, 3, click_js=True)
+        click_on(driver, xpath__button_previous, 4, click_js=True)
