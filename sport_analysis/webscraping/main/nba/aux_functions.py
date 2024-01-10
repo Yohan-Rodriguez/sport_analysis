@@ -1,3 +1,4 @@
+import time
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -106,3 +107,16 @@ def click_on_previous(driver, iterations=1):
     for i_iterations in range(iterations):
         # Clic sobre el botón
         click_on(driver, xpath__button_previous, 4, click_js=True)
+
+
+
+def search_box_score_or_statistics(driver, xpath_rx, name_search):
+
+    for i_search in range(10):
+                
+        element_text = click_on(driver, xpath_rx, 10, click_js=True).text
+
+        if element_text == name_search:
+            break
+
+        time.sleep(1)

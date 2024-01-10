@@ -4,7 +4,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from .aux_functions import choose_options_menu, click_on, click_on_previous
+from .aux_functions import choose_options_menu, click_on, click_on_previous, search_box_score_or_statistics
 from .statistics_extraction import get_statistics_match
 from .dictionaries_db import set_name_dict_team, set_info_players_in_dict_team, get_dict_teams
 
@@ -121,7 +121,7 @@ def open_and_scraping_web(driver, count_click_on_previous_tx):
     # ============================================================================================================ # 
     
     # ============================================================================================================ #
-    # ACCES TO MATCHES AND PREVIOUS BUTTON                                                                                      #
+    # ACCES TO MATCHES AND PREVIOUS BUTTON                                                                         #
     # ============================================================================================================ #    
     # Bandera que cambia cuando ya no está disponible el botón "PREVIOUS" 
     flag_no_change_season = False
@@ -138,7 +138,7 @@ def open_and_scraping_web(driver, count_click_on_previous_tx):
         nume_divs_scundarios = len(divs_secundarios)
 
         # ============================================================================================================ #
-        # ACCESS SEASON'S MATCHES X 10                                                                                     #
+        # ACCESS SEASON'S MATCHES X 10                                                                                 #
         # ============================================================================================================ #
         # Acceder a cada uno de los X partidos cargados en el div principal que contien los partidos
         for i_matches in range(1, (nume_divs_scundarios+1)):
@@ -160,9 +160,12 @@ def open_and_scraping_web(driver, count_click_on_previous_tx):
                 break
 
             try:
-                # Información del partido como: nombres de los equipos, fecha y marcadores.
-                # print(f'element_match_{i_matches}.text:', element_match_x.text)
                 print('\n# Cliks:', count_click_on_previous, '- # del match:', i_matches)
+                # Información del partido como: nombres de los equipos, fecha y marcadores.
+                print(f'element_match_{i_matches}.text:', element_match_x.text)
+
+
+
 
 
 
@@ -171,18 +174,50 @@ def open_and_scraping_web(driver, count_click_on_previous_tx):
                 print('Activated EXCEPTIONE: No se puede acceder al método ".text" del elemento del partido "X"')
 
             # ======================================================================================================== #
+            # ACCESS TO TOP MATCH'S PLAYERS                                                                            #
+            # ======================================================================================================== #
+            name_search = 'BOX SCORE'
+            xpath_box_score_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2]/'\
+                                'div/div[1]/div/div/div[3]/div[1]/div/div/div/h2[2]/a'
+            search_box_score_or_statistics(driver, xpath_box_score_x, name_search)
+
+            for i_bets_players in range(2):
+
+                for i_3_bp in range(1, 4):
+                    xpath_name_position = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/d'\
+                                        f'iv[2]/div/div[1]/div/div/div[3]/div[2]/div/div/div[3]/div/div/div[1]/div[2]/a[{i_3_bp}]/div/div/div[2]'
+
+                    xpath_pts_reb_ast = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div'\
+                                        f'[2]/div/div[1]/div/div/div[3]/div[2]/div/div/div[3]/div/div/div[2]/div[2]/a[{i_3_bp}]'
+                    
+                    element_name_position = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.XPATH, xpath_name_position))).text
+                    element_pts_reb_ast = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.XPATH, xpath_pts_reb_ast))).text
+
+                if i_bets_players == 0:
+                    xpath_change_team_on_bs = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/'\
+                                              'div/div/div[2]/div/div[1]/div/div/div[3]/div[2]/div/div/div[2]/div/div[2]'
+                    element_change_team_on_bs = click_on(driver, xpath_change_team_on_bs, 10, click_js=True)                    
+            # END --------- ACCESS TO TOP MATCH'S PLAYERS                                                              #
+            # ======================================================================================================== #
+
+            # ======================================================================================================== #
             # ACCESS TO STATISTICS                                                                                     #
             # ======================================================================================================== #
             # xpath del botón "STATISTICS"
             # y dar clic sobre el componente que contiene las estadísticas del partido "x"
-            for i_statisctics in range(10):
-                xpath_statistics_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2]/'\
+            xpath_statistics_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2]/'\
                                     'div/div[1]/div/div/div[3]/div[1]/div/div/div/h2[3]/a' 
-                        
-                element_statistics_x = click_on(driver, xpath_statistics_x, 10, click_js=True)
+            name_search = 'STATISTICS'
+            search_box_score_or_statistics(driver, xpath_statistics_x, name_search)
 
-                if element_statistics_x.text == 'Statistics':
-                    break
+            # for i_statisctics in range(10):
+            #     xpath_statistics_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2]/'\
+            #                         'div/div[1]/div/div/div[3]/div[1]/div/div/div/h2[3]/a' 
+                        
+            #     element_statistics_x = click_on(driver, xpath_statistics_x, 10, click_js=True)
+
+            #     if element_statistics_x.text == 'Statistics':
+            #         break
 
 
             # For para acceder a las estadísticas individuales de cada cuarto (Q1, Q2, Q3 y Q4)

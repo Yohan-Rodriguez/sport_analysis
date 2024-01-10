@@ -11,9 +11,6 @@ def get_statistics_match(driver):
 
     Args:
         driver: WebDriver
-        quarter_x: Referencia al cuarto específico sobre el que se está obteniendo las estadísiticas
-        count_click_on_previous:
-        i_matches:
 
     Returns:
         Función sin return.
@@ -65,8 +62,7 @@ def get_statistics_match(driver):
             elem_stat_dev_x = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, xpath_stat_dev_x)))
             
             # Mostrar las estadísticas del partido
-            # print(f'\nelem_stat_dev_{i_dev_stat}', elem_stat_dev_x.text)
-            print('...')
+            print(elem_stat_dev_x.text)
 
 
 
