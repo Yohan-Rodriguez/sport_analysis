@@ -162,7 +162,7 @@ def open_and_scraping_web(driver, count_click_on_previous_tx):
             try:
                 print('\n# Cliks:', count_click_on_previous, '- # del match:', i_matches)
                 # Información del partido como: nombres de los equipos, fecha y marcadores.
-                print(f'element_match_{i_matches}.text:', element_match_x.text)
+                print(f'Data:', element_match_x.text, sep='\n')
 
 
 
@@ -192,6 +192,8 @@ def open_and_scraping_web(driver, count_click_on_previous_tx):
                     
                     element_name_position = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.XPATH, xpath_name_position))).text
                     element_pts_reb_ast = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.XPATH, xpath_pts_reb_ast))).text
+                    
+                    print('\nBets players', element_name_position, element_pts_reb_ast, sep='\n')
 
                 if i_bets_players == 0:
                     xpath_change_team_on_bs = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/'\

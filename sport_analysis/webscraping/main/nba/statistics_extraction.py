@@ -62,7 +62,7 @@ def get_statistics_match(driver):
             elem_stat_dev_x = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, xpath_stat_dev_x)))
             
             # Mostrar las estadísticas del partido
-            print(elem_stat_dev_x.text)
+            print('Estadísticas:', elem_stat_dev_x.text, sep='\n')
 
 
 
