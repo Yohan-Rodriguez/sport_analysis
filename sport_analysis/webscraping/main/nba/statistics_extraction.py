@@ -64,6 +64,8 @@ def get_statistics_match(driver):
             # Mostrar las estadísticas del partido
             print('Estadísticas:', elem_stat_dev_x.text, sep='\n')
 
+            
+
 
 
 
