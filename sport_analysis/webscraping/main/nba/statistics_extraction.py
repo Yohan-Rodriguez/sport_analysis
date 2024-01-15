@@ -45,20 +45,23 @@ def get_statistics_match(driver, quarter_x):
               
     """
 
-    dict_stats_quarter = {
-                            'stats_q_h': {
-                                            'stats_q1-1': {}, 'stats_q1-2': {}, 'stats_q1-3': {},
-                                            'stats_q2-1': {}, 'stats_q2-2': {}, 'stats_q2-3': {},
-                                            'stats_q3-1': {}, 'stats_q3-2': {}, 'stats_q3-3': {},
-                                            'stats_q4-1': {}, 'stats_q4-2': {}, 'stats_q4-3': {},
-                            },
-                            'stats_q_a': {
-                                            'stats_q1-1': {}, 'stats_q1-2': {}, 'stats_q1-3': {},
-                                            'stats_q2-1': {}, 'stats_q2-2': {}, 'stats_q2-3': {},
-                                            'stats_q3-1': {}, 'stats_q3-2': {}, 'stats_q3-3': {},
-                                            'stats_q4-1': {}, 'stats_q4-2': {}, 'stats_q4-3': {},
-                            }
-                         }
+
+    # dict_stats_quarter = {
+    #                         'stats_q_h': {
+    #                                         'stats_q1-1': {}, 'stats_q1-2': {}, 'stats_q1-3': {},
+    #                                         'stats_q2-1': {}, 'stats_q2-2': {}, 'stats_q2-3': {},
+    #                                         'stats_q3-1': {}, 'stats_q3-2': {}, 'stats_q3-3': {},
+    #                                         'stats_q4-1': {}, 'stats_q4-2': {}, 'stats_q4-3': {},
+    #                         },
+    #                         'stats_q_a': {
+    #                                         'stats_q1-1': {}, 'stats_q1-2': {}, 'stats_q1-3': {},
+    #                                         'stats_q2-1': {}, 'stats_q2-2': {}, 'stats_q2-3': {},
+    #                                         'stats_q3-1': {}, 'stats_q3-2': {}, 'stats_q3-3': {},
+    #                                         'stats_q4-1': {}, 'stats_q4-2': {}, 'stats_q4-3': {},
+    #                         }
+    #                      }
+
+    list_stats_quarter = []
     
     # Xpath de contenedor de la barra deslizante vertical donde están contenidas las estadísticas del partido
     xpath_container_scroll_bar = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2]/div/div[3]'
@@ -90,8 +93,13 @@ def get_statistics_match(driver, quarter_x):
 
                 # Iterar sobre los elementos de la lista que serán las claves del diccionario
                 for i_stats_q in range(1, len_list_elem_stat_dev_x, 3):
-                    dict_stats_quarter['stats_q_h'][f'stats_q{quarter_x}-{i_dev_stat}'][list_elem_stat_dev_x[i_stats_q]] = list_elem_stat_dev_x[i_stats_q-1]
-                    dict_stats_quarter['stats_q_a'][f'stats_q{quarter_x}-{i_dev_stat}'][list_elem_stat_dev_x[i_stats_q]] = list_elem_stat_dev_x[i_stats_q+1]
+                    list_stats_quarter.append(f'hq{quarter_x}_{list_elem_stat_dev_x[i_stats_q]}')
+                    list_stats_quarter.append(list_elem_stat_dev_x[i_stats_q-1])
+                    list_stats_quarter.append(f'aq{quarter_x}_{list_elem_stat_dev_x[i_stats_q]}')
+                    list_stats_quarter.append(list_elem_stat_dev_x[i_stats_q+1])
+
+                    # dict_stats_quarter['stats_q_h'][f'stats_q{quarter_x}-{i_dev_stat}'][list_elem_stat_dev_x[i_stats_q]] = list_elem_stat_dev_x[i_stats_q-1]
+                    # dict_stats_quarter['stats_q_a'][f'stats_q{quarter_x}-{i_dev_stat}'][list_elem_stat_dev_x[i_stats_q]] = list_elem_stat_dev_x[i_stats_q+1]
 
         except:
             print(f'Activated EXCEPTIONE: No se ha encontrado el elemento "elem_stat_dev_{i_dev_stat}" de las estadisticas')
@@ -118,6 +126,7 @@ def get_statistics_match(driver, quarter_x):
             print('Activated EXCEPTIONE: On Scroll statistics', e, end='\n')
             continue
 
-    return dict_stats_quarter
+    return list_stats_quarter
+    # return dict_stats_quarter
 
     

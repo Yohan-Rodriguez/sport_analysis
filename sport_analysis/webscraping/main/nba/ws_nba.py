@@ -106,6 +106,7 @@ def inicializar_driver():
 # ==================================================================================================================== #
 # Variable para ser iterada por un foor
 list_keys = ['total_points', 'q1', 'q2', 'q3', 'q4']
+list_keys_tp = ['name_player', 'position', 'points', 'rebounds', 'assists']
 def open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, num_folder):  
 
     # instanciaq de la clase "template_info_to_send_to_db()"
@@ -157,6 +158,9 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, n
         # for i_matches in range(1, (nume_divs_scundarios+1)):
         for i_matches in range(1, 3):
 
+            # Lista de data a adjuntar al diccionario del match
+            list_data_temp = []
+
             # xpath de cada partido dentro de la etiqueta <div> que contiene los 10 partidos (como máximo)
             xpath_match_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[1]/div/div'\
                             f'[2]/div[{i_matches}]/a'
@@ -193,10 +197,18 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, n
                 # Si el partido no tuvo overtime, la lista tendrá 13 elementos string
                 if len_list_info_match == 13:
                     # Agregar el overtime en matches.is_overtime
-                    obj_dict_data.dict_db_nba_match['is_overtime'] = 0
+                    # obj_dict_data.dict_db_nba_match['is_overtime'] = 0
+
+                    list_data_temp.append('is_overtime')
+                    list_data_temp.append(0)
+
                 # Si el partido si tuvo overtime, la lista tendrá 15 elementos string
                 elif len_list_info_match == 15:
-                    obj_dict_data.dict_db_nba_match['is_overtime'] = 1
+                    # obj_dict_data.dict_db_nba_match['is_overtime'] = 1
+                    
+                    list_data_temp.append('is_overtime')
+                    list_data_temp.append(1)
+
                     # Eliminar los elementos que referencian los 2 puntajes del overtime
                     del list_info_match[12]
                     del list_info_match[7]
@@ -228,19 +240,29 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, n
                         # Agregar puntos finales del equipo
                         if flag_home == 'h':
                             for i_data in list_keys:
-                                obj_dict_data.dict_db_nba_stats_h[i_data] = list_info_match[list_index[list_keys.index(i_data)]]
+                                # obj_dict_data.dict_db_nba_stats_h[i_data] = list_info_match[list_index[list_keys.index(i_data)]]
                                 
+                                list_data_temp.append(f'h_{i_data}')
+                                list_data_temp.append(list_info_match[list_index[list_keys.index(i_data)]])
+
                                 # print('\n2.1', obj_dict_data.dict_db_nba_stats_h)
                         
                         else:
                             for i_data in list_keys:
-                                obj_dict_data.dict_db_nba_stats_a[i_data] = list_info_match[list_index[list_keys.index(i_data)]]             
+                                # obj_dict_data.dict_db_nba_stats_a[i_data] = list_info_match[list_index[list_keys.index(i_data)]]             
                                 
+                                list_data_temp.append(f'a_{i_data}')
+                                list_data_temp.append(list_info_match[list_index[list_keys.index(i_data)]])
+
                                 # print('\n2.2', obj_dict_data.dict_db_nba_stats_a)
                      
 
                     if i_team == n_home:
-                        obj_dict_data.dict_db_nba_match['n_home'] = n_home
+                        # obj_dict_data.dict_db_nba_match['n_home'] = n_home
+
+                        list_data_temp.append('n_home')
+                        list_data_temp.append(n_home)
+
                         update_team_stats_dict(obj_dict_data, list_info_match, [-2, 3, 4, 5, 6])
                         
                         # list_index = [-2, 3, 4, 5, 6]
@@ -251,8 +273,12 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, n
                         
 
                     else:
-                        obj_dict_data.dict_db_nba_match['n_away'] = n_away
-                        obj_dict_data.dict_db_nba_stats_a['is_home'] = 0
+                        # obj_dict_data.dict_db_nba_match['n_away'] = n_away
+                        # obj_dict_data.dict_db_nba_stats_a['is_home'] = 0
+
+                        list_data_temp.append('n_home')
+                        list_data_temp.append(n_home)
+
                         update_team_stats_dict(obj_dict_data, list_info_match, [-1, 7, 8, 9, 10], flag_home='away')
 
                         # list_index = [-1, 7, 8, 9, 10]
@@ -262,7 +288,10 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, n
                         #     print('\n2.2', obj_dict_data.dict_db_nba_stats_a)
 
                 # Agregar fecha de "matches" (YY-MM-DD)
-                obj_dict_data.dict_db_nba_match['date_match'] = f'{list_info_match[0]}'
+                # obj_dict_data.dict_db_nba_match['date_match'] = f'{list_info_match[0]}'
+
+                list_data_temp.append('date_match')
+                list_data_temp.append(f'{list_info_match[0]}')
 
                 # print('\n3', obj_dict_data.dict_db_nba_match)                
 
@@ -306,19 +335,32 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, n
                         
                         # Home's Top players
                         if i_bets_players == 0:
+                            
                             # Agregar los datos al dictionary
-                            for i_keys_h in obj_dict_data.dict_db_nba_stats_h['top_players'][f'player_{i_3_bs}'].keys():
-                                obj_dict_data.dict_db_nba_stats_h['top_players'][f'player_{i_3_bs}'][i_keys_h] = list_bets_player[count_keys]
+                            for i_keys_h_tp in list_keys_tp:
+                                list_data_temp.append(f'htp{i_3_bs}_{i_keys_h_tp}')
+                                list_data_temp.append(list_bets_player[count_keys])
                                 count_keys += 1
+
+                            # # Agregar los datos al dictionary
+                            # for i_keys_h in obj_dict_data.dict_db_nba_stats_h['top_players'][f'player_{i_3_bs}'].keys():
+                            #     obj_dict_data.dict_db_nba_stats_h['top_players'][f'player_{i_3_bs}'][i_keys_h] = list_bets_player[count_keys]
+                            #     count_keys += 1
 
                                 # print('\n4', obj_dict_data.dict_db_nba_stats_h)
                         
                         # Away's Top players
                         else:
                             # Agregar los datos al dictionary
-                            for i_keys_a in obj_dict_data.dict_db_nba_stats_a['top_players'][f'player_{i_3_bs}'].keys():
-                                obj_dict_data.dict_db_nba_stats_a['top_players'][f'player_{i_3_bs}'][i_keys_a] = list_bets_player[count_keys]
+                            for i_keys_h_tp in list_keys_tp:
+                                list_data_temp.append(f'atp{i_3_bs}_{i_keys_h_tp}')
+                                list_data_temp.append(list_bets_player[count_keys])
                                 count_keys += 1
+
+                            # # Agregar los datos al dictionary
+                            # for i_keys_a in obj_dict_data.dict_db_nba_stats_a['top_players'][f'player_{i_3_bs}'].keys():
+                            #     obj_dict_data.dict_db_nba_stats_a['top_players'][f'player_{i_3_bs}'][i_keys_a] = list_bets_player[count_keys]
+                            #     count_keys += 1
                                 
                                 # print('\n5', obj_dict_data.dict_db_nba_stats_a)
             
@@ -357,19 +399,46 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, n
                 
                 dict_stats_quarter_rx = get_statistics_match(driver, quarter_x)
                 
-                for i_stats in range(1, 5):
-                    # Actualizar 'stats_qX' sin borrar los datos existentes
-                    test_quarter = f'stats_q{i_stats}'
-                    # Actualizar 'stats_qX' sin borrar los datos existentes
-                    obj_dict_data.dict_db_nba_stats_h['stats_q'][test_quarter] = { **obj_dict_data.dict_db_nba_stats_h['stats_q'][test_quarter],
-                                                                                   **dict_stats_quarter_rx['stats_q_h'][f'{test_quarter}-1'] }
-                    obj_dict_data.dict_db_nba_stats_h['stats_q'][f'stats_q{i_stats}'].update(dict_stats_quarter_rx['stats_q_h'][f'stats_q{i_stats}-2'])
-                    obj_dict_data.dict_db_nba_stats_h['stats_q'][f'stats_q{i_stats}'].update(dict_stats_quarter_rx['stats_q_h'][f'stats_q{i_stats}-3'])
+                list_data_temp.extend(dict_stats_quarter_rx)
+
+                len_list_data_temp = len(list_data_temp)
+                if len_list_data_temp % 2 == 0:
                     
-                    obj_dict_data.dict_db_nba_stats_a['stats_q'][test_quarter] = { **obj_dict_data.dict_db_nba_stats_a['stats_q'][test_quarter],
-                                                                                   **dict_stats_quarter_rx['stats_q_a'][f'{test_quarter}-1'] }
-                    obj_dict_data.dict_db_nba_stats_a['stats_q'][f'stats_q{i_stats}'].update(dict_stats_quarter_rx['stats_q_a'][f'stats_q{i_stats}-2'])
-                    obj_dict_data.dict_db_nba_stats_a['stats_q'][f'stats_q{i_stats}'].update(dict_stats_quarter_rx['stats_q_a'][f'stats_q{i_stats}-3'])
+                    for i_sync_data in range(0, len_list_data_temp, 2):
+                        i_key = list_data_temp[i_sync_data]
+
+                        if i_key not in obj_dict_data.dict_db_nba_match.keys():
+                            obj_dict_data.dict_db_nba_match[i_key] = []
+
+                        obj_dict_data.dict_db_nba_match[i_key].append(list_data_temp[i_sync_data+1])
+
+                # Encuentra la clave con la lista de mayor longitud
+                # clave_con_longitud_maxima = max(obj_dict_data.dict_db_nba_match, key=lambda k: len(obj_dict_data.dict_db_nba_match[k]))
+                clave_con_longitud_maxima = max(obj_dict_data.dict_db_nba_match.values(), key=lambda x: len(x))
+
+                # Actualiza todas las listas para que tengan la misma longitud
+                for clave, valor in obj_dict_data.dict_db_nba_match.items():
+                    while len(valor) < len(clave_con_longitud_maxima):
+                        valor.append(None)
+
+
+
+
+
+                # for i_stats in range(1, 5):
+                #     # Actualizar 'stats_qX' sin borrar los datos existentes
+                #     test_quarter = f'stats_q{i_stats}'
+                #     # Actualizar 'stats_qX' sin borrar los datos existentes
+                #     obj_dict_data.dict_db_nba_stats_h['stats_q'][test_quarter] = { **obj_dict_data.dict_db_nba_stats_h['stats_q'][test_quarter],
+                #                                                                    **dict_stats_quarter_rx['stats_q_h'][f'{test_quarter}-1'] }
+                #     obj_dict_data.dict_db_nba_stats_h['stats_q'][f'stats_q{i_stats}'].update(dict_stats_quarter_rx['stats_q_h'][f'stats_q{i_stats}-2'])
+                #     obj_dict_data.dict_db_nba_stats_h['stats_q'][f'stats_q{i_stats}'].update(dict_stats_quarter_rx['stats_q_h'][f'stats_q{i_stats}-3'])
+                    
+                #     obj_dict_data.dict_db_nba_stats_a['stats_q'][test_quarter] = { **obj_dict_data.dict_db_nba_stats_a['stats_q'][test_quarter],
+                #                                                                    **dict_stats_quarter_rx['stats_q_a'][f'{test_quarter}-1'] }
+                #     obj_dict_data.dict_db_nba_stats_a['stats_q'][f'stats_q{i_stats}'].update(dict_stats_quarter_rx['stats_q_a'][f'stats_q{i_stats}-2'])
+                    # obj_dict_data.dict_db_nba_stats_a['stats_q'][f'stats_q{i_stats}'].update(dict_stats_quarter_rx['stats_q_a'][f'stats_q{i_stats}-3'])
+
             
                 # print('\n6', obj_dict_data.dict_db_nba_stats_h)
                 # print('\n7', obj_dict_data.dict_db_nba_stats_a)
@@ -379,12 +448,12 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, n
         # END --------- ACCESS SEASON'S MATCHES X 10                                                                       #
         # ============================================================================================================ #
 
-        obj_dict_data.dict_db_nba_match['team_stats_home'] = obj_dict_data.dict_db_nba_stats_h
-        obj_dict_data.dict_db_nba_match['team_stats_away'] = obj_dict_data.dict_db_nba_stats_a
+        # obj_dict_data.dict_db_nba_match['team_stats_home'] = obj_dict_data.dict_db_nba_stats_h
+        # obj_dict_data.dict_db_nba_match['team_stats_away'] = obj_dict_data.dict_db_nba_stats_a
 
         # print('\n8', obj_dict_data.dict_db_nba_match)
         
-        obj_dict_data.restart_dict_db_nba_stats()
+        # obj_dict_data.restart_dict_db_nba_stats()
 
         obj_dict_data.dict_db_nba['matches'][f'{count_click_on_previous}-{i_matches}'] = obj_dict_data.dict_db_nba_match
         print('\n9', obj_dict_data.dict_db_nba)
