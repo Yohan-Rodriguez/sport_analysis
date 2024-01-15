@@ -104,29 +104,31 @@ def inicializar_driver():
 # ==================================================================================================================== #
 # SCRAPING WEB                                                                                                         #
 # ==================================================================================================================== #
-def open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, num_folder, list_restricted_id_teams,
-                          list_restricted_id_matches):  
+# Variable para ser iterada por un foor
+list_keys = ['total_points', 'q1', 'q2', 'q3', 'q4']
+def open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, num_folder):  
 
     # instanciaq de la clase "template_info_to_send_to_db()"
     obj_dict_data = tisdb()
 
+    obj_dict_data.current_season = currente_season
+
     # Setear el valor del atributo "num_folder" de la instancia creada de la clase "template_info_to_send_to_db()"
     obj_dict_data.num_folder = num_folder
-
-
 
     # Bandera para recargar la página cada 23 minutos
     time_now = datetime.datetime.now()
     time_end = datetime.datetime.now()
     diff_time = (time_end - time_now).seconds
 
+    # Conteo de click preivos sobre "PREVIOUS"
     count_click_on_previous = count_click_on_previous_tx
 
     # ============================================================================================================ #
     # BUTTON PREVIOUS INITIAL                                                                                      #
     # ============================================================================================================ #
     if count_click_on_previous > 0:
-        # Número de clics sobre "PREVIOUS" dados hasta el momento durante la ejecución del código
+        # Número de clics sobre "PREVIOUS" dados hasta el momento, durante la ejecución del código
         click_on_previous(driver=driver, iterations=(count_click_on_previous))
     # END --------- BUTTON PREVIOUS INITIAL                                                                        #
     # ============================================================================================================ # 
@@ -136,7 +138,7 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, n
     # ============================================================================================================ #    
     # Bandera que cambia cuando ya no está disponible el botón "PREVIOUS" 
     flag_no_change_season = False
-    while (not flag_no_change_season) and (diff_time < 90):
+    while (not flag_no_change_season) and (diff_time < 300):
         
         # div principal que contiene como máximo 10 partidos
         xpath_div_main_10_matches = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[1]/div/div[2]'
@@ -152,7 +154,8 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, n
         # ACCESS SEASON'S MATCHES X 10                                                                                 #
         # ============================================================================================================ #
         # Acceder a cada uno de los X partidos cargados en el div principal que contien los partidos
-        for i_matches in range(1, (nume_divs_scundarios+1)):
+        # for i_matches in range(1, (nume_divs_scundarios+1)):
+        for i_matches in range(1, 3):
 
             # xpath de cada partido dentro de la etiqueta <div> que contiene los 10 partidos (como máximo)
             xpath_match_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[1]/div/div'\
@@ -160,8 +163,10 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, n
             
             try:
                 # Clic sobre cada partido
-                if i_matches ==1:
+                # if para el primer partido
+                if i_matches == 1:
                     element_match_x = click_on(driver, xpath_match_x, 5)
+                # else para los otros 9 (máximo) partidos
                 else:
                     element_match_x = click_on(driver, xpath_match_x, 5, True)
             
@@ -172,8 +177,9 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, n
 
             try:
                 print('\n# Cliks:', count_click_on_previous, '- # del match:', i_matches)
-                # Información del partido como: nombres de los equipos, fecha y marcadores.
-                print(f'Data:', element_match_x.text, sep='\n')
+                
+                # # Información del partido como: nombres de los equipos, fecha y marcadores.
+                # print(f'Data:', element_match_x.text, sep='\n')
                 
                 # Crear la lista con la información base del partido
                 list_info_match = element_match_x.text.splitlines()
@@ -187,62 +193,59 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, n
                 # Si el partido no tuvo overtime, la lista tendrá 13 elementos string
                 if len_list_info_match == 13:
                     # Agregar el overtime en matches.is_overtime
-                    obj_dict_data.dict_db_nba['matches']['is_overtime'].append(0)
-                    print(list_info_match)
-
+                    obj_dict_data.dict_db_nba_match['is_overtime'] = 0
                 # Si el partido si tuvo overtime, la lista tendrá 15 elementos string
                 elif len_list_info_match == 15:
-                    obj_dict_data.dict_db_nba['matches']['is_overtime'].append(1)
+                    obj_dict_data.dict_db_nba_match['is_overtime'] = 1
                     # Eliminar los elementos que referencian los 2 puntajes del overtime
                     del list_info_match[12]
                     del list_info_match[7]
-                    print('AET Eliminado')  
-                    print(list_info_match)                
+                    # print('AET Eliminado')  
+
+                print(list_info_match)                
 
                 # Nombre del equipo local
                 n_home = list_info_match[1]
                 # Nombre del equipo visitante
                 n_away = list_info_match[2]
 
+                # Lista que contiene los nombres de los equipos del actual partido
                 list_names_teams = [n_home, n_away]
 
                 # Evaluar si los equipos del partido ya existen en el diccionario
                 for i_team in list_names_teams:
-                    # Si el equipo no existe en el diccionario
-                    if i_team not in obj_dict_data.dict_db_nba['teams']['name_team']:
-                        # Adicionar los nombres de los equipos local y visitante
-                        obj_dict_data.dict_db_nba['teams']['name_team'].append(n_home)
-                        obj_dict_data.dict_db_nba['teams']['name_team'].append(n_away)
 
-                    # Agregar nombre del equipo a "team_stats.name_team"
-                    obj_dict_data.dict_db_nba['team_stats']['name_team'].append(i_team)
+                    # Si el equipo no existe en el diccionario
+                    if i_team not in obj_dict_data.dict_db_nba['teams']:
+                        # Adicionar los nombres de los equipos local y visitante
+                        obj_dict_data.dict_db_nba['teams'].append(n_home)
+
+                        if n_away not in obj_dict_data.dict_db_nba['teams']:
+                            obj_dict_data.dict_db_nba['teams'].append(n_away)
                     
+                    
+                    def update_team_stats_dict(obj_dict_data, list_info_match, list_index, flag_home='h'):
+                        # Agregar puntos finales del equipo
+                        if flag_home == 'h':
+                            for i_data in list_keys:
+                                obj_dict_data.dict_db_nba_stats_h[i_data] = list_info_match[list_index[list_keys.index(i_data)]]
+                        
+                        else:
+                            for i_data in list_keys:
+                                obj_dict_data.dict_db_nba_stats_a[i_data] = list_info_match[list_index[list_keys.index(i_data)]]             
+                     
+
                     if i_team == n_home:
-                        # Agregar que el quipo es el local en "team_stats.name_team"
-                        obj_dict_data.dict_db_nba['team_stats']['is_home'].append(1) 
-                        # Agregar puntos finales del local
-                        obj_dict_data.dict_db_nba['team_stats']['total_points'].append([11])
-                        # Agregar puntos de los cuartos del local
-                        obj_dict_data.dict_db_nba['team_stats']['q1'].append([3])
-                        obj_dict_data.dict_db_nba['team_stats']['q2'].append([4])
-                        obj_dict_data.dict_db_nba['team_stats']['q3'].append([5])
-                        obj_dict_data.dict_db_nba['team_stats']['q4'].append([6])
+                        obj_dict_data.dict_db_nba_match['n_home'] = n_home
+                        update_team_stats_dict(obj_dict_data, list_info_match, [-2, 3, 4, 5, 6])
 
                     else:
-                        # Agregar que el quipo es visitante en "team_stats.name_team"
-                        obj_dict_data.dict_db_nba['team_stats']['is_home'].append(0) 
-                        # Agregar puntos finales del visitante
-                        obj_dict_data.dict_db_nba['team_stats']['total_points'].append([12])
-                        # Agregar puntos de los cuartos del visitante
-                        obj_dict_data.dict_db_nba['team_stats']['q1'].append([7])
-                        obj_dict_data.dict_db_nba['team_stats']['q2'].append([8])
-                        obj_dict_data.dict_db_nba['team_stats']['q3'].append([9])
-                        obj_dict_data.dict_db_nba['team_stats']['q4'].append([10])
+                        obj_dict_data.dict_db_nba_match['n_away'] = n_away
+                        obj_dict_data.dict_db_nba_stats_a['is_home'] = 0
+                        update_team_stats_dict(obj_dict_data, list_info_match, [-1, 7, 8, 9, 10], flag_home='away')
 
-                # Agregar fecha de "matches"
-                obj_dict_data.dict_db_nba['matches']['date_match'].append(list_info_match[6:], '-',
-                                                                          list_info_match[3:5], '-',
-                                                                          list_info_match[:2])
+                # Agregar fecha de "matches" (YY-MM-DD)
+                obj_dict_data.dict_db_nba_match['date_match'] = f'{list_info_match[0]}'
                 
             except:
                 print('Activated EXCEPTIONE: No se puede acceder al método ".text" del elemento del partido "X"')
@@ -257,33 +260,44 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, n
 
             for i_bets_players in range(2):
 
-                for i_3_bp in range(1, 4):
+                for i_3_bs in range(1, 4):
+                    # Los 2 XPATH de la información del jugador
                     xpath_name_position = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/d'\
-                                        f'iv[2]/div/div[1]/div/div/div[3]/div[2]/div/div/div[3]/div/div/div[1]/div[2]/a[{i_3_bp}]/div/div/div[2]'
+                                        f'iv[2]/div/div[1]/div/div/div[3]/div[2]/div/div/div[3]/div/div/div[1]/div[2]/a[{i_3_bs}]/div/div/div[2]'
 
                     xpath_pts_reb_ast = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div'\
-                                        f'[2]/div/div[1]/div/div/div[3]/div[2]/div/div/div[3]/div/div/div[2]/div[2]/a[{i_3_bp}]'
+                                        f'[2]/div/div[1]/div/div/div[3]/div[2]/div/div/div[3]/div/div/div[2]/div[2]/a[{i_3_bs}]'
                     
-                    element_name_position = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.XPATH, xpath_name_position))).text
-                    element_pts_reb_ast = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.XPATH, xpath_pts_reb_ast))).text
+                    element_name_position = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.XPATH, xpath_name_position))).text.splitlines()
+                    element_pts_reb_ast = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.XPATH, xpath_pts_reb_ast))).text.splitlines()                    
                     
-                    # listas con los datos del jugador top del equipo en el partido 
-                    list_bets_player = element_name_position.splitlines()
-                    list_element_pts_reb_ast = element_pts_reb_ast.splitlines()
-
                     # Crear una lista unificda de los datos del jugador top del equipo en el partido
-                    list_bets_player.extend(list_element_pts_reb_ast)
+                    list_bets_player = []
+                    list_bets_player.extend(element_name_position)
+                    list_bets_player.extend(element_pts_reb_ast)
+
+                    print(list_bets_player)
 
                     if len(list_bets_player) == 6:
                         # Eliminar el dato del número de la camiseta
                         del list_bets_player[1]
-
-                        # Agregar los datos al dictionary
-                        obj_dict_data.dict_db_nba['top_players']['name_player'].append(list_bets_player[0])
-                        obj_dict_data.dict_db_nba['top_players']['position'].append(list_bets_player[1])
-                        obj_dict_data.dict_db_nba['top_players']['points'].append(list_bets_player[2])
-                        obj_dict_data.dict_db_nba['top_players']['rebounds'].append(list_bets_player[3])
-                        obj_dict_data.dict_db_nba['top_players']['assists'].append(list_bets_player[4])
+                        
+                        # Contador para las llaves del diccionario
+                        count_keys = 0
+                        
+                        # Home's Top players
+                        if i_bets_players == 0:
+                            # Agregar los datos al dictionary
+                            for i_keys in obj_dict_data.dict_db_nba_stats_h['top_players'][f'player_{i_3_bs}'].keys():
+                                obj_dict_data.dict_db_nba_stats_h['top_players'][f'player_{i_3_bs}'][i_keys] = list_bets_player[count_keys]
+                                count_keys += 1
+                        
+                        # Away's Top players
+                        else:
+                            # Agregar los datos al dictionary
+                            for i_keys in obj_dict_data.dict_db_nba_stats_a['top_players'][f'player_{i_3_bs}'].keys():
+                                obj_dict_data.dict_db_nba_stats_a['top_players'][f'player_{i_3_bs}'][i_keys] = list_bets_player[count_keys]
+                                count_keys += 1
 
                 # Cambiar al equipo visitante y obtener su top de jugadores del partido
                 if i_bets_players == 0:
@@ -298,9 +312,9 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, n
             # ======================================================================================================== #
             # xpath del botón "STATISTICS"
             # y dar clic sobre el componente que contiene las estadísticas del partido "x"
+            name_search = 'STATISTICS'
             xpath_statistics_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2]/'\
                                     'div/div[1]/div/div/div[3]/div[1]/div/div/div/h2[3]/a' 
-            name_search = 'STATISTICS'
             search_box_score_or_statistics(driver, xpath_statistics_x, name_search)
 
             # For para acceder a las estadísticas individuales de cada cuarto (Q1, Q2, Q3 y Q4)
@@ -312,18 +326,35 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, n
                 # Clic sobre cada quarto
                 element_quarter_x = click_on(driver, xpath_quarter_x, 10, click_js=True)
 
-                # Núemro del cuarto actual (Q1 o Q2 o Q3 o Q4)
+                # Número del cuarto actual (Q1 o Q2 o Q3 o Q4)
                 quarter_x = i_quarters-1
                 
                 # Obtener las estadísticas del paritdo "x"
                 print('# Cliks:', count_click_on_previous, '- # del match:', i_matches, '- Quarto:', quarter_x)
-                get_statistics_match(driver)
+                
+                dict_stats_quarter_rx = get_statistics_match(driver, quarter_x)
+                
+                for i_stats in range(1, 5):
+                    obj_dict_data.dict_db_nba_stats_h['stats_q'][f'stats_q{i_stats}'] = dict_stats_quarter_rx['stats_q_h'][f'stats_q{i_stats}-1']
+                    obj_dict_data.dict_db_nba_stats_h['stats_q'][f'stats_q{i_stats}'].update(dict_stats_quarter_rx['stats_q_h'][f'stats_q{i_stats}-2'])
+                    obj_dict_data.dict_db_nba_stats_h['stats_q'][f'stats_q{i_stats}'].update(dict_stats_quarter_rx['stats_q_h'][f'stats_q{i_stats}-3'])
+                    obj_dict_data.dict_db_nba_stats_a['stats_q'][f'stats_q{i_stats}'] = dict_stats_quarter_rx['stats_q_a'][f'stats_q{i_stats}-1']
+                    obj_dict_data.dict_db_nba_stats_a['stats_q'][f'stats_q{i_stats}'].update(dict_stats_quarter_rx['stats_q_a'][f'stats_q{i_stats}-2'])
+                    obj_dict_data.dict_db_nba_stats_a['stats_q'][f'stats_q{i_stats}'].update(dict_stats_quarter_rx['stats_q_a'][f'stats_q{i_stats}-3'])
             # END --------- ACCESS TO STATISTICS                                                                       #
             # ======================================================================================================== #
         
         # END --------- ACCESS SEASON'S MATCHES X 10                                                                       #
         # ============================================================================================================ #
 
+        obj_dict_data.dict_db_nba_match['team_stats_home'] = obj_dict_data.dict_db_nba_stats_h
+        obj_dict_data.dict_db_nba_match['team_stats_away'] = obj_dict_data.dict_db_nba_stats_a
+
+        obj_dict_data.restart_dict_db_nba_stats()
+
+        obj_dict_data.dict_db_nba['matches'][f'{count_click_on_previous}-{i_matches}'] = obj_dict_data.dict_db_nba_match
+        obj_dict_data.restart_dict_db_nba_match()
+        
         try:
             click_on_previous(driver)
             
@@ -382,12 +413,6 @@ def get_and_set_data_nba():
     # Contador para referenciar del archivo .csv ha crear
     num_folder = 1
 
-    # Lista de id's de equipo ya asignados
-    list_restricted_id_teams = []
-    
-    # Lista de id's de equipo ya asignados
-    list_restricted_id_matches = []
-
     # Bandera que cambia cuando ya no está disponible el botón "PREVIOUS" 
     flag_no_change_season_rx = True
 
@@ -395,7 +420,7 @@ def get_and_set_data_nba():
     # ACCESS TO EACH SEASON                                                                                        #
     # ============================================================================================================ #   
 
-    # Mientras hallan seasons a sensar (count_season < 10)
+    # Mientras hallan seasons a sensar (count_season < 10) en función del diccionario "dict_sesons"
     while count_season < max_season:
 
         # str con la season actual
@@ -435,9 +460,8 @@ def get_and_set_data_nba():
         
         # "flag_no_change_season_rx = True" Significa que se acabaron los partidos de la season actual
         # "flag_no_change_season_rx = False" Significa que se agotó el tiempo. Recargar la página
-        flag_no_change_season_rx, count_click_on_previous_rx = open_and_scraping_web(driver, count_click_on_previous_tx,
-                                                                                     currente_season, num_folder, list_restricted_id_teams,
-                                                                                     list_restricted_id_matches)
+        flag_no_change_season_rx, count_click_on_previous_rx = open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, 
+                                                                                     num_folder)
 
         count_click_on_previous_tx = count_click_on_previous_rx
 
