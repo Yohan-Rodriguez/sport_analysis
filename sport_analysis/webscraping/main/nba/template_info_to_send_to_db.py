@@ -1,4 +1,5 @@
 import os
+import copy
 import pandas as pd
 
 
@@ -70,13 +71,13 @@ class TemplateInfoToSendToDB():
                 } 
 
 
-                # Estadísticas equipo visitante
-                self.dict_db_nba_stats_a = self.dict_db_nba_stats_h
+                # Estadísticas equipo visitante. Copia profunda de "self.dict_db_nba_stats_h"
+                self.dict_db_nba_stats_a = copy.deepcopy(self.dict_db_nba_stats_h)
 
                 # 
-                self.dict_db_nba_match_original = self.dict_db_nba_match
-                self.dict_db_nba_stats_h_original = self.dict_db_nba_stats_h
-                self.dict_db_nba_stats_a_original = self.dict_db_nba_stats_a
+                self.dict_db_nba_match_original = self.dict_db_nba_match.copy()
+                self.dict_db_nba_stats_h_original = self.dict_db_nba_stats_h.copy()
+                self.dict_db_nba_stats_a_original = self.dict_db_nba_stats_a.copy()
 
 
         def restart_dict_db_nba_match(self):
