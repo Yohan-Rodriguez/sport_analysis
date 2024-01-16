@@ -15,6 +15,10 @@ class TemplateInfoToSendToDB():
 
                 # 
                 self.current_season = None
+                
+                # Valor a usar para la creación del archivo .csv 
+                # con el valor del # de clics dados sobre una la sesión especifica
+                self.count_click_on_previous = None
 
                 # Plantilla del formato para guardar temporalmente la información
                 self.dict_db_nba = {
@@ -27,97 +31,175 @@ class TemplateInfoToSendToDB():
                 }
 
                 self.dict_db_nba_match = {
-                                              # 'idmatches': [],        # Primaty Key secundaria de toda la db
-                                              'date_match': [], 
-                                              'n_home': [],
-                                              'n_away': [],
-                                              'is_overtime': [], 
-
-
-                                        #       'h_is_home': [], 
-                                              'h_total_points': [], 
-                                              'h_q1': [], 
-                                              'h_q2': [], 
-                                              'h_q3': [], 
-                                              'h_q4': [], 
-                                              
-                                        #       'hq1_Free throws': [],
-                                        #       'hq1_pointers': [],
-                                        #       # ...
-                                              
-                                        #       'hq2_Free throws': [],
-                                        #       'hq2_pointers': [],
-                                        #       # ...
-                                             
-                                        #       'hq3_pointers': [],
-                                        #       'hq3_pointers': [],
-                                        #       'hq3_Field goals': [],
-                                        #       # ...
-                                             
-                                        #       'hq4_pointers': [],
-                                        #       'hq4_pointers': [],
-                                        #       # ...
-                                             
-
-                                        #       'htp1_name_player':[],
-                                        #       'htp1_position':[],
-                                        #       'htp1_points':[],
-                                        #       'htp1_rebounds':[],
-                                        #       'htp1_assists':[],
-
-                                        #       'htp2_name_player':[],
-                                        #       'htp2_position':[],
-                                        #       'htp2_points':[],
-                                        #       'htp2_rebounds':[],
-                                        #       'htp2_assists':[],
-
-                                        #       'htp3_name_player':[],
-                                        #       'htp3_position':[],
-                                        #       'htp3_points':[],
-                                        #       'htp3_rebounds':[],
-                                        #       'htp3_assists':[],
-
-
-                                        # #       'a_is_home': [], 
-                                        #       'a_total_points': [], 
-                                        #       'a_q1': [], 
-                                        #       'a_q2': [], 
-                                        #       'a_q3': [], 
-                                        #       'a_q4': [], 
-                                              
-                                        #       'aq1_Free throws': [],
-                                        #       'aq1_pointers': [],
-                                        #       # ...
-                                              
-                                        #       'aq2_Free throws': [],
-                                        #       'aq2_pointers': [],
-                                        #       # ...
-                                             
-                                        #       'aq3_pointers': [],
-                                        #       'aq3_pointers': [],
-                                        #       'aq3_Field goals': [],
-                                        #       # ...
-                                             
-                                        #       'aq4_pointers': [],
-                                        #       'aq4_pointers': [],
-                                        #       # ...
-                                             
-
-                                        #       'atp1_name_player':[],
-                                        #       'atp1_position':[],
-                                        #       'atp1_points':[],
-                                        #       'atp1_rebounds':[],
-                                        #       'atp1_assists':[],
-
-                                        #       'atp2_name_player':[],
-                                        #       # ...
-
-                                        #       'atp3_name_player':[],
-                                        #       # ...                                              
-                }
-
+                                          # General Data
+                                          'is_overtime': [],
+                                          'date_match': [],
+                                          
+                                          # General Data Home
+                                          'n_home': [],
+                                          'h_total_points': [],
+                                          'h_q1': [],
+                                          'h_q2': [],
+                                          'h_q3': [],
+                                          'h_q4': [],
+                                          
+                                          # General Data Away
+                                          'n_away': [],
+                                          'a_total_points': [],
+                                          'a_q1': [],
+                                          'a_q2': [],
+                                          'a_q3': [],
+                                          'a_q4': [],
+                                          
+                                          # To Players Home
+                                          'h_tp1_name_player': [],
+                                          'h_tp1_position': [],
+                                          'h_tp1_points': [],
+                                          'h_tp1_rebounds': [],
+                                          'h_tp1_assists': [],
+                                          'h_tp2_name_player': [],
+                                          'h_tp2_position': [],
+                                          'h_tp2_points': [],
+                                          'h_tp2_rebounds': [],
+                                          'h_tp2_assists': [],
+                                          'h_tp3_name_player': [],
+                                          'h_tp3_position': [],
+                                          'h_tp3_points': [],
+                                          'h_tp3_rebounds': [],
+                                          'h_tp3_assists': [],
+                                          
+                                          # To Players Away
+                                          'a_tp1_name_player': [],
+                                          'a_tp1_position': [],
+                                          'a_tp1_points': [],
+                                          'a_tp1_rebounds': [],
+                                          'a_tp1_assists': [],
+                                          'a_tp2_name_player': [],
+                                          'a_tp2_position': [],
+                                          'a_tp2_points': [],
+                                          'a_tp2_rebounds': [],
+                                          'a_tp2_assists': [],
+                                          'a_tp3_name_player': [],
+                                          'a_tp3_position': [],
+                                          'a_tp3_points': [],
+                                          'a_tp3_rebounds': [],
+                                          'a_tp3_assists': [],
+                                          
+                                          # General Data Q1
+                                          'h_q1_Free throws': [],
+                                          'a_q1_Free throws': [],
+                                          'h_q1_2 pointers': [],
+                                          'a_q1_2 pointers': [],
+                                          'h_q1_3 pointers': [],
+                                          'a_q1_3 pointers': [],
+                                          'h_q1_Field goals': [],
+                                          'a_q1_Field goals': [],
+                                          'h_q1_Defensive rebounds': [],
+                                          'a_q1_Defensive rebounds': [],
+                                          'h_q1_Offensive rebounds': [],
+                                          'a_q1_Offensive rebounds': [],
+                                          'h_q1_Assists': [],
+                                          'a_q1_Assists': [],
+                                          'h_q1_Turnovers': [],
+                                          'a_q1_Turnovers': [],
+                                          'h_q1_Steals': [],
+                                          'a_q1_Steals': [],
+                                          'h_q1_Blocks': [],
+                                          'a_q1_Blocks': [],
+                                          'h_q1_Fouls': [],
+                                          'a_q1_Fouls': [],
+                                          'h_q1_Time spent in lead': [],
+                                          'a_q1_Time spent in lead': [],
+                                          'h_q1_Biggest lead': [],
+                                          'a_q1_Biggest lead': [],
+                                          
+                                          # General Data Q2
+                                          'h_q2_Free throws': [],
+                                          'a_q2_Free throws': [],
+                                          'h_q2_2 pointers': [],
+                                          'a_q2_2 pointers': [],
+                                          'h_q2_3 pointers': [],
+                                          'a_q2_3 pointers': [],
+                                          'h_q2_Field goals': [],
+                                          'a_q2_Field goals': [],
+                                          'h_q2_Defensive rebounds': [],
+                                          'a_q2_Defensive rebounds': [],
+                                          'h_q2_Offensive rebounds': [],
+                                          'a_q2_Offensive rebounds': [],
+                                          'h_q2_Assists': [],
+                                          'a_q2_Assists': [],
+                                          'h_q2_Turnovers': [],
+                                          'a_q2_Turnovers': [],
+                                          'h_q2_Steals': [],
+                                          'a_q2_Steals': [],
+                                          'h_q2_Blocks': [],
+                                          'a_q2_Blocks': [],
+                                          'h_q2_Fouls': [],
+                                          'a_q2_Fouls': [],
+                                          'h_q2_Time spent in lead': [],
+                                          'a_q2_Time spent in lead': [],
+                                          'h_q2_Biggest lead': [],
+                                          'a_q2_Biggest lead': [],
+                                          
+                                          # General Data Q3
+                                          'h_q3_Free throws': [],
+                                          'a_q3_Free throws': [],
+                                          'h_q3_2 pointers': [],
+                                          'a_q3_2 pointers': [],
+                                          'h_q3_3 pointers': [],
+                                          'a_q3_3 pointers': [],
+                                          'h_q3_Field goals': [],
+                                          'a_q3_Field goals': [],
+                                          'h_q3_Defensive rebounds': [],
+                                          'a_q3_Defensive rebounds': [],
+                                          'h_q3_Offensive rebounds': [],
+                                          'a_q3_Offensive rebounds': [],
+                                          'h_q3_Assists': [],
+                                          'a_q3_Assists': [],
+                                          'h_q3_Turnovers': [],
+                                          'a_q3_Turnovers': [],
+                                          'h_q3_Steals': [],
+                                          'a_q3_Steals': [],
+                                          'h_q3_Blocks': [],
+                                          'a_q3_Blocks': [],
+                                          'h_q3_Fouls': [],
+                                          'a_q3_Fouls': [],
+                                          'h_q3_Time spent in lead': [],
+                                          'a_q3_Time spent in lead': [],
+                                          'h_q3_Biggest lead': [],
+                                          'a_q3_Biggest lead': [],
+                                          
+                                          # General Data Q4
+                                          'h_q4_Free throws': [],
+                                          'a_q4_Free throws': [],
+                                          'h_q4_2 pointers': [],
+                                          'a_q4_2 pointers': [],
+                                          'h_q4_3 pointers': [],
+                                          'a_q4_3 pointers': [],
+                                          'h_q4_Field goals': [],
+                                          'a_q4_Field goals': [],
+                                          'h_q4_Defensive rebounds': [],
+                                          'a_q4_Defensive rebounds': [],
+                                          'h_q4_Offensive rebounds': [],
+                                          'a_q4_Offensive rebounds': [],
+                                          'h_q4_Assists': [],
+                                          'a_q4_Assists': [],
+                                          'h_q4_Turnovers': [],
+                                          'a_q4_Turnovers': [],
+                                          'h_q4_Steals': [],
+                                          'a_q4_Steals': [],
+                                          'h_q4_Blocks': [],
+                                          'a_q4_Blocks': [],
+                                          'h_q4_Fouls': [],
+                                          'a_q4_Fouls': [],
+                                          'h_q4_Time spent in lead': [],
+                                          'a_q4_Time spent in lead': [],
+                                          'h_q4_Biggest lead': [],
+                                          'a_q4_Biggest lead': []
+                                          }
                
-                self.dict_db_nba_match_original = self.dict_db_nba_match
+                # Atributo - copia de self.dict_db_nba_match
+                self.dict_db_nba_match_original = self.dict_db_nba_match.copy()
 
 
         def restart_dict_db_nba_match(self):
@@ -153,11 +235,17 @@ class TemplateInfoToSendToDB():
                         # Iterar sobre las claves del diccionario y crea un archivo CSV por cada sub-diccionario
                         # file = claves del diccionario
                         # data = valores del diccionario
-                        for file, data in self.dict_db_nba['matches'].items():
-                                df = pd.DataFrame(data)
-                                # Nombre del archivo a crear
-                                folder_path_file = os.path.join(folder_path, f'{file}.csv')
-                                df.to_csv(folder_path_file, index=False, encoding='utf-8')
+
+                        df = pd.DataFrame(self.dict_db_nba_match)
+                        # Nombre del archivo a crear
+                        folder_path_file = os.path.join(folder_path, f'{self.count_click_on_previous}.csv')
+                        df.to_csv(folder_path_file, index=False, encoding='utf-8')
+
+                        # for file, data in self.dict_db_nba['matches'].items():
+                        #         df = pd.DataFrame(data)
+                        #         # Nombre del archivo a crear
+                        #         folder_path_file = os.path.join(folder_path, f'{file}.csv')
+                        #         df.to_csv(folder_path_file, index=False, encoding='utf-8')
 
                         print('Se han creado con exito los archivos .csv actuales')
 

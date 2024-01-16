@@ -93,9 +93,9 @@ def get_statistics_match(driver, quarter_x):
 
                 # Iterar sobre los elementos de la lista que serán las claves del diccionario
                 for i_stats_q in range(1, len_list_elem_stat_dev_x, 3):
-                    list_stats_quarter.append(f'hq{quarter_x}_{list_elem_stat_dev_x[i_stats_q]}')
+                    list_stats_quarter.append(f'h_q{quarter_x}_{list_elem_stat_dev_x[i_stats_q]}')
                     list_stats_quarter.append(list_elem_stat_dev_x[i_stats_q-1])
-                    list_stats_quarter.append(f'aq{quarter_x}_{list_elem_stat_dev_x[i_stats_q]}')
+                    list_stats_quarter.append(f'a_q{quarter_x}_{list_elem_stat_dev_x[i_stats_q]}')
                     list_stats_quarter.append(list_elem_stat_dev_x[i_stats_q+1])
 
                     # dict_stats_quarter['stats_q_h'][f'stats_q{quarter_x}-{i_dev_stat}'][list_elem_stat_dev_x[i_stats_q]] = list_elem_stat_dev_x[i_stats_q-1]
