@@ -104,18 +104,15 @@ def inicializar_driver():
 # ==================================================================================================================== #
 # SCRAPING WEB                                                                                                         #
 # ==================================================================================================================== #
-# Variable para ser iterada por un foor
+# Variable para ser iterada por un for
 list_keys = ['total_points', 'q1', 'q2', 'q3', 'q4']
 list_keys_tp = ['name_player', 'position', 'points', 'rebounds', 'assists']
-def open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, num_folder):  
+def open_and_scraping_web(driver, count_click_on_previous_tx, current_season):  
 
     # instanciaq de la clase "template_info_to_send_to_db()"
     obj_dict_data = tisdb()
 
-    obj_dict_data.current_season = currente_season
-
-    # Setear el valor del atributo "num_folder" de la instancia creada de la clase "template_info_to_send_to_db()"
-    obj_dict_data.num_folder = num_folder
+    obj_dict_data.current_season = current_season
 
     # Bandera para recargar la página cada 23 minutos
     time_now = datetime.datetime.now()
@@ -181,16 +178,12 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, n
 
             try:
                 print('\n# Cliks:', count_click_on_previous, '- # del match:', i_matches)
-                
-                # # Información del partido como: nombres de los equipos, fecha y marcadores.
-                # print(f'Data:', element_match_x.text, sep='\n')
-                
+                                
                 # Crear la lista con la información base del partido
                 list_info_match = element_match_x.text.splitlines()
 
                 # Eliminar la posición "FT"
                 del list_info_match[1]
-                print('FT eliminado')
 
                 len_list_info_match = len(list_info_match) 
 
@@ -208,9 +201,6 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, n
                     # Eliminar los elementos que referencian los 2 puntajes del overtime
                     del list_info_match[12]
                     del list_info_match[7]
-                    # print('AET Eliminado')  
-
-                # print('\n1', obj_dict_data.dict_db_nba_match)
 
                 # Nombre del equipo local
                 n_home = list_info_match[1]
@@ -236,58 +226,32 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, n
                         # Agregar puntos finales del equipo
                         if flag_home == 'h':
                             for i_data in list_keys:
-                                # obj_dict_data.dict_db_nba_stats_h[i_data] = list_info_match[list_index[list_keys.index(i_data)]]
-                                
                                 list_data_temp.append(f'h_{i_data}')
                                 list_data_temp.append(list_info_match[list_index[list_keys.index(i_data)]])
-
-                                # print('\n2.1', obj_dict_data.dict_db_nba_stats_h)
                         
                         else:
                             for i_data in list_keys:
-                                # obj_dict_data.dict_db_nba_stats_a[i_data] = list_info_match[list_index[list_keys.index(i_data)]]             
-                                
                                 list_data_temp.append(f'a_{i_data}')
                                 list_data_temp.append(list_info_match[list_index[list_keys.index(i_data)]])
-
-                                # print('\n2.2', obj_dict_data.dict_db_nba_stats_a)
                      
 
                     if i_team == n_home:
-                        # obj_dict_data.dict_db_nba_match['n_home'] = n_home
 
                         list_data_temp.append('n_home')
                         list_data_temp.append(n_home)
 
-                        update_team_stats_dict(obj_dict_data, list_info_match, [-2, 3, 4, 5, 6])
-                        
-                        # list_index = [-2, 3, 4, 5, 6]
-                        # for i_data in list_keys:
-                        #     obj_dict_data.dict_db_nba_stats_h[i_data] = list_info_match[list_index[list_keys.index(i_data)]]
-
-                        #     print('\n2.1', obj_dict_data.dict_db_nba_stats_h)
-                        
+                        update_team_stats_dict(obj_dict_data, list_info_match, [-2, 3, 4, 5, 6])                        
 
                     else:
-                        # obj_dict_data.dict_db_nba_match['n_away'] = n_away
-                        # obj_dict_data.dict_db_nba_stats_a['is_home'] = 0
 
                         list_data_temp.append('n_away')
                         list_data_temp.append(n_away)
 
                         update_team_stats_dict(obj_dict_data, list_info_match, [-1, 7, 8, 9, 10], flag_home='away')
 
-                        # list_index = [-1, 7, 8, 9, 10]
-                        # for i_data in list_keys:
-                        #     obj_dict_data.dict_db_nba_stats_a[i_data] = list_info_match[list_index[list_keys.index(i_data)]]
-
-                        #     print('\n2.2', obj_dict_data.dict_db_nba_stats_a)
-
                 # Agregar fecha de "matches" (YY-MM-DD)
                 list_data_temp.append('date_match')
-                list_data_temp.append(f'{list_info_match[0]}')
-
-                # print('\n3', obj_dict_data.dict_db_nba_match)                
+                list_data_temp.append(f'{list_info_match[0]}')                
 
             except:
                 print('Activated EXCEPTIONE: No se puede acceder al método ".text" del elemento del partido "X"')
@@ -388,9 +352,7 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, n
                 # Número del cuarto actual (Q1 o Q2 o Q3 o Q4)
                 quarter_x = i_quarters-1
                 
-                # Obtener las estadísticas del paritdo "x"
-                print('# Cliks:', count_click_on_previous, '- # del match:', i_matches, '- Quarto:', quarter_x)
-                
+                # Obtener las estadísticas del paritdo "x"                
                 list_stats_quarter_rx = get_statistics_match(driver, quarter_x)
                 
                 list_data_temp.extend(list_stats_quarter_rx)
@@ -460,14 +422,8 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, n
         diff_time = (time_end - time_now).seconds
         print(f'\nTiempo transcurrido: {diff_time} segundos')    
 
-    # END --------- ACCES TO MATCHES AND PREVIOUS BUTTON                                                                  #
-    # ============================================================================================================ # 
-    
-    # obj_dict_data.dict_db_nba['matches'][f'{count_click_on_previous}'] = obj_dict_data.dict_db_nba_match.copy()
-    # print('\nInformación completa de los dos partidos:', obj_dict_data.dict_db_nba, sep='\n')
-    # obj_dict_data.restart_dict_db_nba_match()
-    
-    print('\nInformación completa de los dos partidos:', obj_dict_data.dict_db_nba, sep='\n')
+    # END --------- ACCES TO MATCHES AND PREVIOUS BUTTON                                                               #
+    # ================================================================================================================ # 
     
     # Setear el valor a usar para la creación del archivo .csv con el valor del # de clics dados sobre una la sesión actual
     obj_dict_data.count_click_on_previous = count_click_on_previous
@@ -479,6 +435,7 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, n
     del obj_dict_data
 
     return flag_no_change_season, count_click_on_previous
+    
 # END --------- SCRAPING WEB                                                                                           #
 # ==================================================================================================================== #
 
@@ -509,9 +466,6 @@ def get_and_set_data_nba():
     # contador de clics sobre "PREVIOUS" dados durante la ejecución del código
     count_click_on_previous_tx = 0
 
-    # Contador para referenciar del archivo .csv ha crear
-    num_folder = 1
-
     # Bandera que cambia cuando ya no está disponible el botón "PREVIOUS" 
     flag_no_change_season_rx = True
 
@@ -523,7 +477,7 @@ def get_and_set_data_nba():
     while count_season < max_season:
 
         # str con la season actual
-        currente_season = dict_sesons[count_season]
+        current_season = dict_sesons[count_season]
 
         # Si se agotó el tiempo, recargar la página web
         if not flag_no_change_season_rx:           
@@ -532,35 +486,32 @@ def get_and_set_data_nba():
             # Recarga página web
             driver.refresh()
             
-            num_folder += 1
 
         # si se acabaron los partidos de la season actual. Cambiar de season
         if flag_no_change_season_rx:
             # ============================================================================================================ #
             # CHOOSE NBA LEAGUE                                                                                            #
             # ============================================================================================================ #
-            print(f'\nCambiando a la temporada {currente_season} de la NBA...')
+            print(f'\nCambiando a la temporada {current_season} de la NBA...')
 
             choose_options_menu(driver=driver, choose_option=count_season)
             
             # Fecha de la season. Ejemplo: para "i_teams = 5" → season = '19/20'
             date_season_str = dict_sesons[count_season]
 
-            # Asignar nueva season
-            count_season += 1
-
             # Resetear el valor de "count_click_on_previous_tx"
             count_click_on_previous_tx -= count_click_on_previous_tx
 
-            # Reset sobre el contador que referencia el archivo .csv ha crear
-            num_folder -= num_folder
+            if count_click_on_previous_tx != 0:
+                # Asignar nueva season
+                count_season += 1
+
             # END --------- CHOOSE NBA LEAGUE                                                                              #
             # ============================================================================================================ #      
         
         # "flag_no_change_season_rx = True" Significa que se acabaron los partidos de la season actual
         # "flag_no_change_season_rx = False" Significa que se agotó el tiempo. Recargar la página
-        flag_no_change_season_rx, count_click_on_previous_rx = open_and_scraping_web(driver, count_click_on_previous_tx, currente_season, 
-                                                                                     num_folder)
+        flag_no_change_season_rx, count_click_on_previous_rx = open_and_scraping_web(driver, count_click_on_previous_tx, current_season)
 
         count_click_on_previous_tx = count_click_on_previous_rx
 

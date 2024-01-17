@@ -10,9 +10,6 @@ class TemplateInfoToSendToDB():
                 # Obtener la ruta a la carpeta "NBA" en el escritorio del pc. Este es un atributo "privado"
                 self.__desktop_nba_path = os.path.join(os.path.expanduser("~"), "Desktop/NBA")
 
-                # Referencia el número del archivo .csv ha crear
-                self.num_folder = None
-
                 # 
                 self.current_season = None
                 
@@ -238,7 +235,7 @@ class TemplateInfoToSendToDB():
 
                         df = pd.DataFrame(self.dict_db_nba_match)
                         # Nombre del archivo a crear
-                        folder_path_file = os.path.join(folder_path, f'{self.count_click_on_previous}.csv')
+                        folder_path_file = os.path.join(folder_path, f'{self.count_click_on_previous-1}.csv')
                         df.to_csv(folder_path_file, index=False, encoding='utf-8')
 
                         # for file, data in self.dict_db_nba['matches'].items():
@@ -247,7 +244,7 @@ class TemplateInfoToSendToDB():
                         #         folder_path_file = os.path.join(folder_path, f'{file}.csv')
                         #         df.to_csv(folder_path_file, index=False, encoding='utf-8')
 
-                        print('Se han creado con exito los archivos .csv actuales')
+                        print('Se ha creado con exito el archivo .csv actual')
 
 
                 except Exception as e:
