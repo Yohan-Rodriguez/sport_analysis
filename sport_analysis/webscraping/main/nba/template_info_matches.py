@@ -48,7 +48,7 @@ class TemplateInfoMatches():
                                           'a_q3': [],
                                           'a_q4': [],
                                           
-                                          # To Players Home
+                                          # Top Players Home
                                           'h_tp1_name_player': [],
                                           'h_tp1_position': [],
                                           'h_tp1_points': [],
@@ -65,7 +65,7 @@ class TemplateInfoMatches():
                                           'h_tp3_rebounds': [],
                                           'h_tp3_assists': [],
                                           
-                                          # To Players Away
+                                          # Top Players Away
                                           'a_tp1_name_player': [],
                                           'a_tp1_position': [],
                                           'a_tp1_points': [],
@@ -195,6 +195,9 @@ class TemplateInfoMatches():
                                           'a_q4_Biggest lead': []
                                           }
                
+                # Lista con las claves del diccionario dict_db_nba_match 
+                self.list_keys_match = list(self.dict_db_nba_match.keys())
+                
                 # Atributo - copia de self.dict_db_nba_match
                 self.dict_db_nba_match_original = self.dict_db_nba_match.copy()
 

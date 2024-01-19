@@ -161,7 +161,7 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, current_season):
     flag_no_change_season = False
 
     # Tiempo (en segundos) máximo de duración de cada scraping de data
-    mum_minutos = 2
+    mum_minutos = 23
     min_to_sec = mum_minutos * 60
 
     # Extraer data mientras hallan aún partidos o el tiempo trasncurrido sea meanor a "mum_minutos" minuos
@@ -192,7 +192,7 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, current_season):
             # xpath de cada partido dentro de la etiqueta <div> que contiene los 10 partidos (como máximo)
             xpath_match_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[1]/div/'\
                            f'div[2]/div[{i_matches}]/a'
-            
+
             try:
                 # Clic sobre cada partido
                 # if para el primer partido
@@ -213,8 +213,13 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, current_season):
                 # Crear la lista con la información base del partido
                 list_info_match = element_match_x.text.splitlines()
 
-                # Eliminar la posición "FT"
-                del list_info_match[1]
+                # Si el partido fue pospuesto, continuar con el siguiente partido de la lista
+                if list_info_match[1] == 'Postponed':
+                    print('\nMatch Postponed')
+                    continue                
+                else:                
+                    # Eliminar la posición "FT"
+                    del list_info_match[1]
 
                 # Longitud de la lista base
                 len_list_info_match = len(list_info_match) 
@@ -268,7 +273,7 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, current_season):
             # ======================================================================================================== #
             # ACCESS TO TOP MATCH'S PLAYERS                                                                            #
             # ======================================================================================================== #
-            name_search = 'BOX SCORE'
+            name_search = 'Box score'
             xpath_box_score_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2]/'\
                                 'div/div[1]/div/div/div[3]/div[1]/div/div/div/h2[2]/a'
             search_box_score_or_statistics(driver, xpath_box_score_x, name_search)
@@ -287,11 +292,18 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, current_season):
                                         '/div[2]/div/div[1]/div/div/div[3]/div[2]/div/div/div[3]/div/div/div[2]/div[2]'\
                                        f'/a[{i_3_bs}]'
                     
-                    element_name_position = WebDriverWait(driver, 5).until(EC.presence_of_element_located
-                                                                    ((By.XPATH, xpath_name_position))).text.splitlines()
-                    element_pts_reb_ast = WebDriverWait(driver, 5).until(EC.presence_of_element_located
-                                                                      ((By.XPATH, xpath_pts_reb_ast))).text.splitlines()
+                    try:
+                        element_name_position = WebDriverWait(driver, 5).until(EC.presence_of_element_located
+                                                                        ((By.XPATH, 
+                                                                          xpath_name_position))).text.splitlines()
+                        element_pts_reb_ast = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.XPATH, 
+                                                                                  xpath_pts_reb_ast))).text.splitlines()
                     
+                    except:
+                        print(f'\nActivated EXCEPTIONE: No found best player element...!')
+                        # Saltar de inmediato a la siguiente iteración de "for i_3_bs in range(1, 4):"
+                        continue
+
                     # Crear una lista unificda de los datos del jugador top del equipo en el partido
                     # list_bets_player = ['name_player', 'position', 'points', 'rebounds', 'assists']
                     list_bets_player = []
@@ -335,7 +347,7 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, current_season):
             # ======================================================================================================== #
             # xpath del botón "STATISTICS"
             # y dar clic sobre el componente que contiene las estadísticas del partido "x"
-            name_search = 'STATISTICS'
+            name_search = 'Statistics'
             xpath_statistics_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2]'\
                                  '/div/div[1]/div/div/div[3]/div[1]/div/div/div/h2[3]/a' 
             search_box_score_or_statistics(driver, xpath_statistics_x, name_search)
@@ -372,28 +384,12 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, current_season):
                     
                     # Iterar sobre las futuras llaves del diccionario principal
                     for i_sync_data in range(0, len_list_data_temp, 2):
-                        to_next_key= list_data_temp[i_sync_data]
-
-                        # Si la llave no existe en el diccionario principal, la crea con un valor de lista vacío
-                        if to_next_key not in obj_data_matches.dict_db_nba_match.keys():
-                            # Obtener la clave de la lista con el mayor número de elementos
-                            key_to_max_len = max(obj_data_matches.dict_db_nba_match, 
-                                                 key=lambda k: len(obj_data_matches.dict_db_nba_match[k]))
-
-                            # Obtener la longitud de la 0lista con el mayor número de elementos
-                            len_max = len(obj_data_matches.dict_db_nba_match[key_to_max_len])
-                            
-                            if len_max==0:
-                                # Crear nueva clave con un valor de lista vacía
-                                obj_data_matches.dict_db_nba_match[to_next_key] = []
-                            
-                            else:
-                                # Llenar con valores "None" hasta alcanzar la longitud máxima
-                                obj_data_matches.dict_db_nba_match[to_next_key] = [None] * len_max
+                        to_next_key = list_data_temp[i_sync_data]
 
                         # Agregar un nuevo elemento al valor lista de la llave "to_next_key" del dicicoanrio de la 
-                        # instancia de clase
-                        obj_data_matches.dict_db_nba_match[to_next_key].append(list_data_temp[i_sync_data+1])           
+                        # instancia de clase solo si la llave existe en el diccionario de la instancia de clase
+                        if to_next_key in obj_data_matches.list_keys_match:
+                            obj_data_matches.dict_db_nba_match[to_next_key].append(list_data_temp[i_sync_data+1])
                 
                 else:                    
                     raise('La lista temporal de datos del partido no contiene los datos suficientes para sincronizar c'\
@@ -401,6 +397,22 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, current_season):
 
             except:
                 print(f'\nActivated EXCEPTIONE:...raise!')   
+
+            # Obtén las longitudes de todas las listas de los valores del dict "obj_data_matches.dict_db_nba_match" 
+            lengths = [len(valor) for valor in obj_data_matches.dict_db_nba_match.values()]
+            
+            # Verificar si todas las longitudes de las listas de los valores del diccionario son iguales
+            if all(i_len == lengths[0] for i_len in lengths):
+                pass
+
+            else:
+                # Encuentra la longitud máxima entre las listas que son los valore del diccionario
+                len_max_key_dict = max(len(valor) for valor in obj_data_matches.dict_db_nba_match.values())
+
+                # Llena las listas con valores "None" de la listas que están incompletas o 
+                # no tiene valores para el partido actual
+                for clave, valor in obj_data_matches.dict_db_nba_match.items():
+                    obj_data_matches.dict_db_nba_match[clave] = valor + [None] * (len_max_key_dict - len(valor))
 
             # END --------- LOAD DICTIONARY                                                                            #
             # ======================================================================================================== #                                
@@ -485,7 +497,8 @@ def get_and_set_data_nba():
     count_season = 2
 
     # contador de clics sobre "PREVIOUS" dados durante la ejecución del código
-    count_click_on_previous_tx = 0
+    count_click_on_previous_tx = 80
+    flag_count_click_on_previous_tx_del = False
 
     # Bandera que cambia cuando ya no está disponible el botón "PREVIOUS" 
     flag_no_change_season_rx = True
@@ -522,12 +535,14 @@ def get_and_set_data_nba():
             # END --------- CHOOSE NBA LEAGUE                                                                          #
             # ======================================================================================================== #      
 
-            # Resetear el valor del contador de clics sobre PREVIOUS "count_click_on_previous_tx"
-            count_click_on_previous_tx -= count_click_on_previous_tx
+            if flag_count_click_on_previous_tx_del:
+                # Resetear el valor del contador de clics sobre PREVIOUS "count_click_on_previous_tx"
+                count_click_on_previous_tx -= count_click_on_previous_tx
+
+            flag_count_click_on_previous_tx_del = True
 
             print(f'\nSe Cambió a la temporada { dict_sesons[count_season]} de la NBA...')
         
-        count_click_on_previous_tx = 131
         # "flag_no_change_season_rx = True" Significa que se acabaron los partidos de la season actual
         # "flag_no_change_season_rx = False" Significa que se agotó el tiempo. Recargar la página
         flag_no_change_season_rx, count_click_on_previous_rx = open_and_scraping_web(driver, count_click_on_previous_tx,
