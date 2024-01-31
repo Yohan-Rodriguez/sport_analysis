@@ -1,107 +1,12 @@
 import datetime
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from .aux_functions import choose_options_menu, click_on, click_on_previous, search_box_score_or_statistics, \
-                            update_geral_stats
+                            update_geral_stats, inicializar_driver
 from .statistics_extraction import get_statistics_match
 from .template_info_matches import TemplateInfoMatches as tim
 
-
-
-def storage_players(driver, name_team):
-    pass
-    # # Buscar sección de "MATCHES"
-    # xpath_matches = '//*[@id="__next"]/main/div[2]/div/div[2]/div[1]/div[5]/div[1]/div[1]'
-    # matches = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.XPATH, xpath_matches)))
-    # matches.click()
-
-
-    # # Buscar sección de "list_players" y dar clic sobre él
-    # xpath_list_players = '//*[@id="__next"]/main/div[2]/div/div[2]/div[1]/div[5]/div[1]/div[2]/label[2]/div/span'    
-    # list_view_players = driver.find_element(By.XPATH, xpath_list_players)
-    # driver.execute_script("arguments[0].click();", list_view_players)
-
-    # i_player = 1
-    # while True:
-    #     try:
-    #         xpath_name_player =  '//*[@id="__next"]/main/div[2]/div/div[2]/div[1]/div[5]/div[1]/div[3]/table/'\
-    #                             f'tr[{i_player}]/td[1]/a/div/span' 
-            
-    #         xpath_position_player =  '//*[@id="__next"]/main/div[2]/div/div[2]/div[1]/div[5]/div[1]/div[3]/ta'\
-    #                                 f'ble/tr[{i_player}]/td[2]/div/span'
-            
-    #         xpath_age_player =  '//*[@id="__next"]/main/div[2]/div/div[2]/div[1]/div[5]/div[1]/div[3]/table/t'\
-    #                            f'r[{i_player}]/td[3]/div'
-            
-    #         name_player = driver.find_element(By.XPATH, xpath_name_player).text
-    #         position_player = driver.find_element(By.XPATH, xpath_position_player).text
-    #         age_player = driver.find_element(By.XPATH, xpath_age_player).text                       
-
-
-    #         set_info_players_in_dict_team(name_team, dict_info_player, key_dict='Players')
-
-
-    #         i_player += 1
-
-    #     except Exception as e:
-    #         dict_teams = get_dict_teams()
-    #         print(dict_teams)
-    #         break
-    # END --------- GET INFO PLAYERS TEAM                                                                              #
-    # ================================================================================================================ #
-
-    # ================================================================================================================ #
-    # GET TOP PLAYERS TEAM                                                                                             #
-    # ================================================================================================================ #
-    # Buscar sección de "list_top_players" y dar clic sobre él
-    xpath_list_top_players = '//*[@id="__next"]/main/div[2]/div/div[2]/div[2]/div[3]/div[1]/div[1]/div'    
-    list_top_players = driver.find_element(By.XPATH, xpath_list_top_players)
-    list_top_players.click()
-
-    # ================================================================================================================ #
-    # CHOOSE NBA LEAGUE IN TOP PLAYERS                                                                                 #
-    # ================================================================================================================ #
-    choose_options_menu(driver=driver, num_toggle='0', choose_option=1)
-    # END --------- CHOOSE NBA LEAGUE IN TOP PLAYERS                                                                   #
-    # ================================================================================================================ #
-
-    # END --------- GET TOP PLAYERS TEAM                                                                               #
-    # ================================================================================================================ #
-
-
-    # ================================================================================================================ #
-    # GET ALL MATCHES                                                                                                  #
-    # ================================================================================================================ #
-
-
-    # END --------- GET GET ALL MATCHES                                                                                #
-    # ================================================================================================================ #
-
-
-
-# ==================================================================================================================== #
-# CHROME DRIVER CONNECTION                                                                                             #
-# ==================================================================================================================== #
-def inicializar_driver():
-    """
-    Crear la conexión con el navegador web BRAVE para la tarea automatizada
-
-    Args:
-
-    Returns:
-        driver: Conección con el el navagador web
-
-    Examples:     
-    """
-    options = webdriver.ChromeOptions()
-    options.binary_location = 'C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe'
-    driver = webdriver.Chrome(options=options)
-
-    return driver
-# END --------- CHROME DRIVER CONNECTION                                                                               #
-# ==================================================================================================================== #
 
 
 # ==================================================================================================================== #
@@ -214,7 +119,7 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, current_season):
                 list_info_match = element_match_x.text.splitlines()
 
                 # Si el partido fue pospuesto, continuar con el siguiente partido de la lista
-                if list_info_match[1] == 'Postponed':
+                if (list_info_match[1] == 'Postponed') or (list_info_match[1] == 'Canceled'):
                     print('\nMatch Postponed')
                     continue                
                 else:                
@@ -273,7 +178,7 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, current_season):
             # ======================================================================================================== #
             # ACCESS TO TOP MATCH'S PLAYERS                                                                            #
             # ======================================================================================================== #
-            name_search = 'Box score'
+            name_search = 'BOX SCORE'
             xpath_box_score_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2]/'\
                                 'div/div[1]/div/div/div[3]/div[1]/div/div/div/h2[2]/a'
             search_box_score_or_statistics(driver, xpath_box_score_x, name_search)
@@ -347,27 +252,33 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, current_season):
             # ======================================================================================================== #
             # xpath del botón "STATISTICS"
             # y dar clic sobre el componente que contiene las estadísticas del partido "x"
-            name_search = 'Statistics'
+            name_search = 'STATISTICS'
             xpath_statistics_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2]'\
                                  '/div/div[1]/div/div/div[3]/div[1]/div/div/div/h2[3]/a' 
             search_box_score_or_statistics(driver, xpath_statistics_x, name_search)
 
-            # For para acceder a las estadísticas individuales de cada cuarto (Q1, Q2, Q3 y Q4)
-            for i_quarters in range(2, 6):
-                # xpath de cada cuarto
-                xpath_quarter_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2'\
-                                 f']/div/div[1]/div/div/div[3]/div[2]/div/div/div[1]/div[{i_quarters}]'
-                
-                # Clic sobre cada quarto
-                element_quarter_x = click_on(driver, xpath_quarter_x, 10, click_js=True)
+            try:
 
-                # Número del cuarto actual (Q1 o Q2 o Q3 o Q4)
-                quarter_x = i_quarters-1
-                
-                # Obtener las estadísticas del paritdo "x"                
-                list_stats_quarter_rx = get_statistics_match(driver, quarter_x)
-                
-                list_data_temp.extend(list_stats_quarter_rx)
+                # For para acceder a las estadísticas individuales de cada cuarto (Q1, Q2, Q3 y Q4)
+                for i_quarters in range(2, 6):
+                    # xpath de cada cuarto
+                    xpath_quarter_x = '//*[@id="__next"]/main/div/div[3]/div/div[1]/div[1]/div[5]/div/div[3]/div/div/div[2'\
+                                    f']/div/div[1]/div/div/div[3]/div[2]/div/div/div[1]/div[{i_quarters}]'
+                    
+                    # Clic sobre cada quarto
+                    element_quarter_x = click_on(driver, xpath_quarter_x, 10, click_js=True)
+
+                    # Número del cuarto actual (Q1 o Q2 o Q3 o Q4)
+                    quarter_x = i_quarters-1
+                    
+                    # Obtener las estadísticas del paritdo "x"                
+                    list_stats_quarter_rx = get_statistics_match(driver, quarter_x)
+                    
+                    list_data_temp.extend(list_stats_quarter_rx)
+
+            except:
+                print('\nActivated EXCEPTIONE: Matche´s stats no found...')
+                continue
             # END --------- ACCESS TO STATISTICS                                                                       #
             # ======================================================================================================== #
                     
@@ -462,7 +373,8 @@ def open_and_scraping_web(driver, count_click_on_previous_tx, current_season):
 # Season a obtener data
 dict_sesons = {0: '', 1: '23-24', 2: '22-23', 3: '21-22', 4: '20-21', 5: '19-20', 6: '18-19', 7: '17-18', 
                       8: '16-17', 9: '15-16',}
-max_season = 5
+max_season = len(dict_sesons.keys())
+
 def get_and_set_data_nba():
     """
     Función principal. Crear el WebDriver y abre el navegador
@@ -494,10 +406,10 @@ def get_and_set_data_nba():
     # ================================================================================================================ # 
 
     # Contador del número de la season actual
-    count_season = 2
+    count_season = 3
 
     # contador de clics sobre "PREVIOUS" dados durante la ejecución del código
-    count_click_on_previous_tx = 80
+    count_click_on_previous_tx = 33
     flag_count_click_on_previous_tx_del = False
 
     # Bandera que cambia cuando ya no está disponible el botón "PREVIOUS" 

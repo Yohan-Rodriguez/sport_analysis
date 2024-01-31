@@ -1,7 +1,31 @@
 import time
+from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+
+
+# ==================================================================================================================== #
+# CHROME DRIVER CONNECTION                                                                                             #
+# ==================================================================================================================== #
+def inicializar_driver():
+    """
+    Crear la conexión con el navegador web BRAVE para la tarea automatizada
+
+    Args:
+
+    Returns:
+        driver: Conección con el el navagador web
+
+    Examples:     
+    """
+    options = webdriver.ChromeOptions()
+    options.binary_location = 'C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe'
+    driver = webdriver.Chrome(options=options)
+
+    return driver
+# END --------- CHROME DRIVER CONNECTION                                                                               #
+# ==================================================================================================================== #
 
 
 # ==================================================================================================================== #
@@ -196,10 +220,11 @@ def search_box_score_or_statistics(driver, xpath_rx, name_search):
         >>> search_box_score_or_statistics(driver, xpath_rx, 'STATISTICS')
     """
 
-    for i_search in range(10):
+    for i_search in range(3):
         
         # Buscar y dar clic sobre el elemento 
-        element_text = click_on(driver, xpath_rx, 10, click_js=True).text
+        element = click_on(driver, xpath_rx, 3, click_js=True)
+        element_text = element.text
 
         # Confirmar que el elemento encontrado sea el correcto
         if element_text == name_search:
